@@ -4,12 +4,19 @@
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+
+    <!-- Bundle ALL content (including native WPF DLLs) into the single file -->
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 
-    <!-- Publish trimming for smaller output -->
-    <PublishTrimmed>false</PublishTrimmed>
+    <!-- Compress the bundle for smaller output -->
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 
-    <!-- Embedded debug symbols -->
+    <!-- Embedded debug symbols — no external PDB files -->
     <DebugType>embedded</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+
+    <!-- Disable ReadyToRun to avoid native extraction -->
+    <PublishReadyToRun>false</PublishReadyToRun>
   </PropertyGroup>
 </Project>

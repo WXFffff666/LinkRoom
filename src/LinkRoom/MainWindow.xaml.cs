@@ -10,29 +10,28 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
-        // Wire up shared node checkbox to enable/disable URL textbox
-        IsSharedNodeEnabled.Checked += (_, _) => SharedNodeUrls.IsEnabled = true;
-        IsSharedNodeEnabled.Unchecked += (_, _) => SharedNodeUrls.IsEnabled = false;
-
-        // Log viewer toggle via status click
-        StatusText.MouseDown += (_, _) =>
-        {
-            LogViewer.Visibility = LogViewer.Visibility == Visibility.Collapsed
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-        };
     }
 
-    /// <summary>Updates the status indicator and text.</summary>
+    /// <summary>Forwards PasswordBox changes to the ViewModel's Password property.</summary>
+    private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is Gui.MainViewModel vm)
+        {
+            vm.Password = ((PasswordBox)sender).Password;
+        }
+    }
+
+    /// <summary>Updates the status indicator color and detail text from code.</summary>
     public void SetStatus(string status, string? detail = null, string? color = null)
     {
         Dispatcher.Invoke(() =>
         {
-            StatusText.Text = status;
-            DetailText.Text = detail ?? "";
             if (color != null && StatusIndicator is Ellipse ellipse)
-                ellipse.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+            {
+                var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+                ellipse.Fill = brush;
+            }
+            DetailText.Text = detail ?? "";
         });
     }
 

@@ -1,12 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
+<PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <RootNamespace>LinkRoom</RootNamespace>
     <AssemblyName>LinkRoom</AssemblyName>
+    <!-- Single-file publish config (inline to ensure WPF SDK applies it) -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <PublishReadyToRun>false</PublishReadyToRun>
   </PropertyGroup>
 
   <!-- Embed EasyTier runtime assets as binary resources for auto-extraction -->
@@ -20,6 +30,11 @@
     <ProjectReference Include="..\LinkRoom.Gui\LinkRoom.Gui.csproj" />
     <ProjectReference Include="..\LinkRoom.Core\LinkRoom.Core.csproj" />
     <ProjectReference Include="..\LinkRoom.Network\LinkRoom.Network.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
   </ItemGroup>
 
 </Project>
