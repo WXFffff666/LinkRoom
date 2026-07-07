@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <!-- Single-file self-contained publish configuration -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+
+    <!-- Publish trimming for smaller output -->
+    <PublishTrimmed>false</PublishTrimmed>
+
+    <!-- Embedded debug symbols -->
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+</Project>

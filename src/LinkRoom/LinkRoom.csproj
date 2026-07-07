@@ -9,6 +9,13 @@
     <AssemblyName>LinkRoom</AssemblyName>
   </PropertyGroup>
 
+  <!-- Embed EasyTier runtime assets as binary resources for auto-extraction -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\LinkRoom.Core\Assets\easytier\**\*" Exclude="..\LinkRoom.Core\Assets\easytier\.git*">
+      <LogicalName>easytier\%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\LinkRoom.Gui\LinkRoom.Gui.csproj" />
     <ProjectReference Include="..\LinkRoom.Core\LinkRoom.Core.csproj" />
