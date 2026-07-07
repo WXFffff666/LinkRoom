@@ -1,0 +1,19 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- LinkRoom brand colors -->
+    <SolidColorBrush x:Key="BrandBlue" Color="#007AFF"/>
+    <SolidColorBrush x:Key="BrandBlueHover" Color="#0056CC"/>
+    <SolidColorBrush x:Key="DangerRed" Color="#FF3B30"/>
+    <SolidColorBrush x:Key="SuccessGreen" Color="#34C759"/>
+    <SolidColorBrush x:Key="WarningOrange" Color="#FF9500"/>
+    <SolidColorBrush x:Key="TextPrimary" Color="#1D1D1F"/>
+    <SolidColorBrush x:Key="TextSecondary" Color="#6E6E73"/>
+    <SolidColorBrush x:Key="SurfaceBackground" Color="#F5F5F7"/>
+    <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="BorderLight" Color="#E5E5EA"/>
+    <!-- Status indicator colors -->
+    <SolidColorBrush x:Key="StatusIdle" Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="StatusConnecting" Color="#FF9500"/>
+    <SolidColorBrush x:Key="StatusConnected" Color="#34C759"/>
+    <SolidColorBrush x:Key="StatusError" Color="#FF3B30"/>
+</ResourceDictionary>
