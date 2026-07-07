@@ -5,37 +5,97 @@
         ui:ThemeManager.IsThemeAware="True"
         ui:WindowHelper.SystemBackdropType="Mica"
         ui:WindowHelper.UseModernWindowStyle="True"
-        ui:TitleBar.Height="40"
-        ui:TitleBar.IsIconVisible="True"
-        Title="LinkRoom" Height="600" Width="440"
-        MinHeight="480" MinWidth="360"
+        ui:TitleBar.Height="40" ui:TitleBar.IsIconVisible="True"
+        Title="LinkRoom" Height="620" Width="480"
+        MinHeight="500" MinWidth="380"
         WindowStartupLocation="CenterScreen">
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="28,12,28,12">
-                <Border Background="#F0F4FF" CornerRadius="16" Padding="20,16" Margin="0,0,0,20">
+            <StackPanel Margin="24,8,24,16">
+                <!-- Header -->
+                <Border Background="#F0F4FF" CornerRadius="14" Padding="16,12" Margin="0,0,0,16">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="🔗" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                        <TextBlock Text="LinkRoom" FontSize="22" FontWeight="Bold" Foreground="#1D1D1F" HorizontalAlignment="Center"/>
-                        <TextBlock Text="P2P 联机工具" FontSize="12" Foreground="#6E6E73" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                        <TextBlock Text="🔗" FontSize="32" HorizontalAlignment="Center"/>
+                        <TextBlock Text="LinkRoom" FontSize="20" FontWeight="Bold" Foreground="#1D1D1F" HorizontalAlignment="Center"/>
+                        <TextBlock Text="P2P 联机工具 · 输入房间号即可联机" FontSize="11" Foreground="#8E8E93" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <TextBlock Text="房间号 (Room ID)" FontSize="13" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,6"/>
-                <TextBox FontSize="16" Padding="12,10" Text="{Binding RoomId, UpdateSourceTrigger=PropertyChanged}"
-                         BorderBrush="#E5E5EA" BorderThickness="1" Background="White"/>
+                <!-- Create / Join Tabs -->
+                <TabControl BorderBrush="Transparent" Background="Transparent" Margin="0,0,0,12">
+                    <TabItem>
+                        <TabItem.Header>
+                            <TextBlock Text="🏠 创建房间" FontSize="14" FontWeight="SemiBold" Padding="16,6"/>
+                        </TabItem.Header>
+                        <StackPanel Margin="0,12,0,0">
+                            <TextBlock Text="设置密码后点击创建，将房间号分享给好友" FontSize="12" Foreground="#8E8E93" Margin="0,0,0,12"/>
+                            <TextBlock Text="房间密码 (可选)" FontSize="13" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,6"/>
+                            <PasswordBox FontSize="16" Padding="12,10" x:Name="CreatePasswordBox"
+                                         BorderBrush="#E5E5EA" BorderThickness="1"/>
+                            <TextBlock Text="留空则无需密码" FontSize="11" Foreground="#AEAEB2" Margin="0,4,0,0"/>
 
-                <TextBlock Text="密码 (Password)" FontSize="13" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,16,0,6"/>
-                <PasswordBox FontSize="16" Padding="12,10" x:Name="PasswordBox" PasswordChanged="PasswordBox_PasswordChanged"
-                             BorderBrush="#E5E5EA" BorderThickness="1" Background="White"/>
+                            <!-- Generated Room ID (shown after creation) -->
+                            <Border Background="#E8F5E9" CornerRadius="8" Padding="14" Margin="0,12,0,0"
+                                    x:Name="CreatedRoomPanel" Visibility="Collapsed">
+                                <StackPanel>
+                                    <TextBlock Text="房间已创建！" FontSize="13" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                                    <DockPanel Margin="0,4,0,0">
+                                        <TextBlock Text="房间号: " FontSize="18" FontWeight="Bold" Foreground="#1B5E20"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBox x:Name="CreatedRoomId" FontSize="18" FontWeight="Bold"
+                                                 Foreground="#1B5E20" IsReadOnly="True" BorderThickness="0"
+                                                 Background="Transparent" VerticalAlignment="Center"
+                                                 MouseDoubleClick="CreatedRoomId_DoubleClick"
+                                                 ToolTip="双击复制"/>
+                                    </DockPanel>
+                                    <TextBlock Text="将这个房间号发送给好友，让他们用'加入房间'连接" FontSize="11" Foreground="#66BB6A"/>
+                                </StackPanel>
+                            </Border>
 
-                <Border CornerRadius="10" Padding="16" Margin="0,16,0,0" BorderBrush="#E8E8ED" BorderThickness="1">
+                            <Button Content="创建房间" Height="44" FontSize="15" FontWeight="SemiBold" Margin="0,14,0,0"
+                                    Command="{Binding CreateRoomCommand}"
+                                    Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
+                        </StackPanel>
+                    </TabItem>
+
+                    <TabItem>
+                        <TabItem.Header>
+                            <TextBlock Text="🔑 加入房间" FontSize="14" FontWeight="SemiBold" Padding="16,6"/>
+                        </TabItem.Header>
+                        <StackPanel Margin="0,12,0,0">
+                            <TextBlock Text="输入好友分享的房间号和密码加入" FontSize="12" Foreground="#8E8E93" Margin="0,0,0,12"/>
+
+                            <TextBlock Text="房间号 (Room ID)" FontSize="13" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,6"/>
+                            <TextBox FontSize="16" Padding="12,10" Text="{Binding RoomId, UpdateSourceTrigger=PropertyChanged}"
+                                     BorderBrush="#E5E5EA" BorderThickness="1" ToolTip="输入 3-64 位字符"/>
+
+                            <TextBlock Text="房间密码" FontSize="13" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,14,0,6"/>
+                            <PasswordBox FontSize="16" Padding="12,10" x:Name="PasswordBox"
+                                         PasswordChanged="PasswordBox_PasswordChanged"
+                                         BorderBrush="#E5E5EA" BorderThickness="1"/>
+
+                            <Grid Margin="0,14,0,0">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Content="加入房间" Height="44" FontSize="15" FontWeight="SemiBold"
+                                        Command="{Binding ConnectCommand}"
+                                        Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
+                                <Button Grid.Column="2" Content="断开" Height="44" FontSize="15" FontWeight="SemiBold"
+                                        Command="{Binding DisconnectCommand}"
+                                        Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
+                            </Grid>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
+
+                <!-- Status -->
+                <Border CornerRadius="10" Padding="14" BorderBrush="#E8E8ED" BorderThickness="1" Margin="0,0,0,0">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                             <GradientStop Color="#F8F8FA" Offset="0"/><GradientStop Color="#F0F0F3" Offset="1"/>
@@ -50,37 +110,52 @@
                     </StackPanel>
                 </Border>
 
-                <Grid Margin="0,16,0,0">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Content="连接" Height="44" FontSize="15" FontWeight="SemiBold"
-                            Command="{Binding ConnectCommand}" Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
-                    <Button Grid.Column="2" Content="断开" Height="44" FontSize="15" FontWeight="SemiBold"
-                            Command="{Binding DisconnectCommand}" Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
-                </Grid>
+                <!-- Peer Info (visible when connected) -->
+                <Border Background="#F5F5F7" CornerRadius="8" Padding="10" Margin="0,8,0,0">
+                    <WrapPanel>
+                        <TextBlock FontSize="11" Foreground="#6E6E73">
+                            <Run Text="NAT: "/><Run Text="{Binding NatType}" FontWeight="SemiBold"/>
+                            <Run Text=" | "/><Run Text="对等: "/><Run Text="{Binding PeerCount}" FontWeight="SemiBold"/>
+                            <Run Text=" | "/><Run Text="延迟: "/><Run Text="{Binding Latency}" FontWeight="SemiBold"/>
+                            <Run Text=" | "/><Run Text="路径: "/><Run Text="{Binding ConnectionType}" FontWeight="SemiBold"/>
+                        </TextBlock>
+                    </WrapPanel>
+                </Border>
 
-                <Expander Header="高级设置" IsExpanded="False" Margin="0,16,0,0" Foreground="#8E8E93" FontSize="13">
-                    <StackPanel Margin="0,10,0,0">
-                        <CheckBox Content="启用共享节点" IsChecked="{Binding IsSharedNodeEnabled}" Foreground="#1D1D1F" Margin="0,0,0,10"/>
+                <!-- Advanced -->
+                <Expander Header="⚙️ 高级设置" IsExpanded="False" Margin="0,10,0,0" Foreground="#8E8E93" FontSize="12">
+                    <StackPanel Margin="0,8,0,0">
+                        <CheckBox Content="启用共享节点" IsChecked="{Binding IsSharedNodeEnabled}" Foreground="#1D1D1F" Margin="0,0,0,8"/>
                         <TextBox Padding="8,6" Text="{Binding SharedNodeUrls}" IsEnabled="{Binding IsSharedNodeEnabled}"
-                                 BorderBrush="#E5E5EA" BorderThickness="1" ToolTip="tcp://example.com:11010" Margin="0,0,0,10"/>
-                        <TextBlock Text="日志级别" FontSize="12" Foreground="#6E6E73" Margin="0,0,0,6"/>
-                        <ComboBox SelectedIndex="0" Text="{Binding LogLevel}" Margin="0,0,0,10">
+                                 BorderBrush="#E5E5EA" BorderThickness="1" Margin="0,0,0,8"/>
+                        <TextBlock Text="日志级别" FontSize="11" Foreground="#6E6E73" Margin="0,0,0,4"/>
+                        <ComboBox SelectedIndex="0" Text="{Binding LogLevel}" Margin="0,0,0,8">
                             <ComboBoxItem Content="Info"/><ComboBoxItem Content="Debug"/><ComboBoxItem Content="Warning"/><ComboBoxItem Content="Error"/>
                         </ComboBox>
-                        <CheckBox Content="禁用 UPnP" IsChecked="{Binding IsUpnpDisabled}" Foreground="#1D1D1F" Margin="0,0,0,10"/>
-                        <TextBlock Text="自定义 STUN 服务器" FontSize="12" Foreground="#6E6E73" Margin="0,0,0,6"/>
-                        <TextBox Padding="8,6" Text="{Binding CustomStunServers}" BorderBrush="#E5E5EA" BorderThickness="1" Margin="0,0,0,10"/>
-                        <TextBlock Text="最大重连次数" FontSize="12" Foreground="#6E6E73" Margin="0,0,0,6"/>
-                        <TextBox Padding="8,6" Text="{Binding MaxReconnectAttempts}" BorderBrush="#E5E5EA" BorderThickness="1" Margin="0,0,0,10"/>
-                        <TextBlock Text="静态虚拟 IP (留空使用 DHCP)" FontSize="12" Foreground="#6E6E73" Margin="0,0,0,6"/>
-                        <TextBox Padding="8,6" Text="{Binding StaticVirtualIp}" BorderBrush="#E5E5EA" BorderThickness="1" ToolTip="如 10.144.1.5"/>
+                        <CheckBox Content="禁用 UPnP" IsChecked="{Binding IsUpnpDisabled}" Foreground="#1D1D1F" Margin="0,0,0,8"/>
+                        <TextBlock Text="自定义 STUN 服务器" FontSize="11" Foreground="#6E6E73" Margin="0,0,0,4"/>
+                        <TextBox Padding="8,6" Text="{Binding CustomStunServers}" BorderBrush="#E5E5EA" BorderThickness="1" Margin="0,0,0,8"/>
+                        <TextBlock Text="最大重连次数" FontSize="11" Foreground="#6E6E73" Margin="0,0,0,4"/>
+                        <TextBox Padding="8,6" Text="{Binding MaxReconnectAttempts}" BorderBrush="#E5E5EA" BorderThickness="1" Margin="0,0,0,8"/>
+                        <TextBlock Text="静态虚拟 IP" FontSize="11" Foreground="#6E6E73" Margin="0,0,0,4"/>
+                        <TextBox Padding="8,6" Text="{Binding StaticVirtualIp}" BorderBrush="#E5E5EA" BorderThickness="1"/>
                     </StackPanel>
                 </Expander>
             </StackPanel>
         </ScrollViewer>
 
-        <Border Grid.Row="1" Padding="8" Background="#F0F0F3">
-            <TextBlock Text="v0.3.0 · EasyTier v2.6.4 · MIT" FontSize="10" Foreground="#AEAEB2" HorizontalAlignment="Center"/>
+        <!-- Log Panel (toggleable) -->
+        <Expander Grid.Row="1" Header="📋 日志" x:Name="LogExpander" IsExpanded="False"
+                  Foreground="#8E8E93" FontSize="11" ExpandDirection="Down">
+            <TextBox x:Name="LogText" Height="120" IsReadOnly="True" FontFamily="Consolas"
+                     FontSize="10" Background="#1E1E1E" Foreground="#CCCCCC"
+                     VerticalScrollBarVisibility="Auto" TextWrapping="NoWrap"
+                     BorderThickness="0"/>
+        </Expander>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Padding="6" Background="#F0F0F3">
+            <TextBlock Text="v0.4.0 · EasyTier v2.6.4 · MIT" FontSize="10" Foreground="#AEAEB2" HorizontalAlignment="Center"/>
         </Border>
     </Grid>
 </Window>

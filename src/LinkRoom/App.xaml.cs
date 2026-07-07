@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using LinkRoom.Core;
 using LinkRoom.Gui;
@@ -12,68 +13,36 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        // 1. Extract EasyTier runtime assets on first launch
         string runtimeDir;
-        try
-        {
-            runtimeDir = RuntimeAssetExtractor.EnsureExtracted("2.6.4");
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"无法解压 EasyTier 运行时: {ex.Message}\n\n请以管理员身份运行。",
-                "LinkRoom", MessageBoxButton.OK, MessageBoxImage.Error);
-            Shutdown();
-            return;
-        }
+        try { runtimeDir = RuntimeAssetExtractor.EnsureExtracted("2.6.4"); }
+        catch (Exception ex) { MessageBox.Show($"EasyTier runtime failed: {ex.Message}\n\nRun as Administrator.", "LinkRoom"); Shutdown(); return; }
 
-        var easytierCorePath = System.IO.Path.Combine(runtimeDir, "easytier-core.exe");
-        var easytierCliPath = System.IO.Path.Combine(runtimeDir, "easytier-cli.exe");
-        var logDir = System.IO.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "LinkRoom", "logs");
+        var easytierCore = Path.Combine(runtimeDir, "easytier-core.exe");
+        var easytierCli = Path.Combine(runtimeDir, "easytier-cli.exe");
+        var logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LinkRoom", "logs");
+        var logFile = Path.Combine(logDir, "linkroom.log");
 
-        // 2. Build logger
-        using var loggerFactory = LoggerFactory.Create(b =>
-        {
-            b.AddDebug();
-            b.SetMinimumLevel(LogLevel.Information);
-        });
+        var logSink = new RollingLogSink(logFile, 500);
+        using var loggerFactory = LoggerFactory.Create(b => { b.AddProvider(logSink); b.SetMinimumLevel(LogLevel.Information); });
 
-        // 3. Create core services
-        var processService = new EasyTierProcessService(easytierCorePath, logDir,
-            loggerFactory.CreateLogger<EasyTierProcessService>());
-        var cliClient = new EasyTierCliClient(easytierCliPath, "127.0.0.1:15888",
-            loggerFactory.CreateLogger<EasyTierCliClient>());
+        var processService = new EasyTierProcessService(easytierCore, logDir, loggerFactory.CreateLogger<EasyTierProcessService>());
+        var cliClient = new EasyTierCliClient(easytierCli, "127.0.0.1:15888", loggerFactory.CreateLogger<EasyTierCliClient>());
         var configBuilder = new EasyTierConfigBuilder(loggerFactory.CreateLogger<EasyTierConfigBuilder>());
         var stateMachine = new ConnectionStateMachine(loggerFactory.CreateLogger<ConnectionStateMachine>());
         var pathSelector = new PathSelectionStrategy(loggerFactory.CreateLogger<PathSelectionStrategy>());
-
-        // 4. Create network detection services
         var natDetector = new StunNatDetector(loggerFactory.CreateLogger<StunNatDetector>());
-        var networkService = new NetworkInfoService(natDetector,
-            loggerFactory.CreateLogger<NetworkInfoService>());
-        var detectionCache = new DetectionCache(networkService,
-            loggerFactory.CreateLogger<DetectionCache>());
-
-        // 5. Create settings + reconnect
+        var networkService = new NetworkInfoService(natDetector, loggerFactory.CreateLogger<NetworkInfoService>());
+        var detectionCache = new DetectionCache(networkService, loggerFactory.CreateLogger<DetectionCache>());
         var settingsService = new SettingsService();
-        var savedSettings = settingsService.Load();
-        var autoReconnect = new AutoReconnectService(stateMachine,
-            ct => Task.CompletedTask, // wired later by ViewModel
-            loggerFactory.CreateLogger<AutoReconnectService>());
+        var saved = settingsService.Load();
 
-        // 6. Create ViewModel with full service graph
-        var viewModel = new MainViewModel(
-            configBuilder, processService, cliClient,
-            stateMachine, pathSelector, detectionCache,
-            networkService, settingsService,
+        var vm = new MainViewModel(configBuilder, processService, cliClient, stateMachine, pathSelector,
+            detectionCache, networkService, settingsService, logSink,
             loggerFactory.CreateLogger<MainViewModel>());
+        vm.RestoreSettings(saved);
 
-        // 7. Restore saved settings
-        viewModel.RestoreSettings(savedSettings);
-
-        // 8. Show window
-        var window = new MainWindow { DataContext = viewModel };
+        var window = new MainWindow { DataContext = vm };
+        vm.SetWindow(window);
         window.Show();
     }
 }
