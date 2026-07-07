@@ -1,3 +1,0 @@
-# EasyTier runtime binaries are fetched at build time
-# This directory is gitignored at the repo level
-# Run: tools\fetch-easytier.ps1 to populate

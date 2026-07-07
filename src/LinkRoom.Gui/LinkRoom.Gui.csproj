@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LinkRoom.Core\LinkRoom.Core.csproj" />
+    <ProjectReference Include="..\LinkRoom.Network\LinkRoom.Network.csproj" />
   </ItemGroup>
 
 </Project>
