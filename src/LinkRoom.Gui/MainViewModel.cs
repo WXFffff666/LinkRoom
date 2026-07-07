@@ -81,9 +81,12 @@ public partial class MainViewModel : ObservableObject
             var room = new RoomOptions { RoomId = RoomId.Trim(), Password = Password };
             var advanced = new AdvancedOptions
             {
-                IsSharedNodeEnabled = IsSharedNodeEnabled, SharedNodeUrls = SharedNodeUrls,
-                LogLevel = LogLevel, IsUpnpDisabled = IsUpnpDisabled,
-                CustomStunServers = CustomStunServers, MaxReconnectAttempts = MaxReconnectAttempts,
+                IsSharedNodeEnabled = IsSharedNodeEnabled,
+                SharedNodeUrls = SharedNodeUrls,
+                LogLevel = LogLevel,
+                IsUpnpDisabled = IsUpnpDisabled,
+                CustomStunServers = CustomStunServers,
+                MaxReconnectAttempts = MaxReconnectAttempts,
                 StaticVirtualIp = StaticVirtualIp,
             };
 
