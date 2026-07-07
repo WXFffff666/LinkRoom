@@ -19,19 +19,35 @@ public partial class MainWindow : Window, IMainWindowView
         if (CreatedRoomId.Text.Length > 0)
         {
             Clipboard.SetText(CreatedRoomId.Text);
-            MessageBox.Show("房间号已复制到剪贴板！", "LinkRoom", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("房间号已复制到剪贴板！", "LinkRoom");
+        }
+    }
+
+    private void OpenSettings_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is Gui.MainViewModel vm)
+        {
+            var dlg = new SettingsWindow(vm);
+            dlg.Owner = this;
+            dlg.ShowDialog();
+        }
+    }
+
+    private void OpenLog_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is Gui.MainViewModel vm)
+        {
+            var dlg = new LogWindow(Gui.MainViewModel.LogLines);
+            dlg.Owner = this;
+            dlg.ShowDialog();
         }
     }
 
     public void ShowCreatedRoom(string roomId)
-    {
-        Dispatcher.Invoke(() => { CreatedRoomId.Text = roomId; CreatedRoomPanel.Visibility = Visibility.Visible; });
-    }
+        => Dispatcher.Invoke(() => { CreatedRoomId.Text = roomId; CreatedRoomPanel.Visibility = Visibility.Visible; });
 
-    public string GetCreatePassword() => CreatePasswordBox.Password;
+    public string GetCreatePassword() => PasswordBox.Password;
 
     public void AppendLog(string line)
-    {
-        Dispatcher.Invoke(() => { LogText.AppendText(line + Environment.NewLine); LogText.ScrollToEnd(); });
-    }
+        => Dispatcher.Invoke(() => Gui.MainViewModel.LogLines.Add(line));
 }

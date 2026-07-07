@@ -37,7 +37,7 @@ public partial class App : Application
         var saved = settingsService.Load();
 
         var vm = new MainViewModel(configBuilder, processService, cliClient, stateMachine, pathSelector,
-            detectionCache, networkService, settingsService, logSink,
+            detectionCache, networkService, settingsService,
             loggerFactory.CreateLogger<MainViewModel>());
         vm.RestoreSettings(saved);
 

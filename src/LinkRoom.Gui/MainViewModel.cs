@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,6 +11,9 @@ namespace LinkRoom.Gui;
 
 public partial class MainViewModel : ObservableObject
 {
+    public static readonly ObservableCollection<string> LogLines = new() { "LinkRoom 启动" };
+    public string LogText => string.Join(Environment.NewLine, LogLines);
+
     private readonly EasyTierConfigBuilder _configBuilder;
     private readonly EasyTierProcessService _processService;
     private readonly EasyTierCliClient _cliClient;
@@ -18,7 +22,6 @@ public partial class MainViewModel : ObservableObject
     private readonly DetectionCache _detectionCache;
     private readonly NetworkInfoService _networkService;
     private readonly SettingsService _settings;
-    private readonly RollingLogSink _logSink;
     private readonly ILogger<MainViewModel> _logger;
     private CancellationTokenSource? _monitorCts;
     private IMainWindowView? _window;
@@ -52,17 +55,17 @@ public partial class MainViewModel : ObservableObject
         EasyTierCliClient cliClient, ConnectionStateMachine stateMachine,
         PathSelectionStrategy pathSelector, DetectionCache detectionCache,
         NetworkInfoService networkService, SettingsService settings,
-        RollingLogSink logSink, ILogger<MainViewModel> logger)
+        ILogger<MainViewModel> logger)
     {
         _configBuilder = configBuilder; _processService = processService;
         _cliClient = cliClient; _stateMachine = stateMachine;
         _pathSelector = pathSelector; _detectionCache = detectionCache;
         _networkService = networkService; _settings = settings;
-        _logSink = logSink; _logger = logger;
+        _logger = logger;
         _stateMachine.StateChanged += OnStateChanged;
     }
 
-    public void SetWindow(IMainWindowView w) { _window = w; _logSink.OnEntryAdded += e => w.AppendLog(SettingsService.SanitizeLog($"[{e.Level}] {e.Message}")); }
+    public void SetWindow(IMainWindowView w) { _window = w; }
     public void RestoreSettings(AppSettings s)
     {
         if (!string.IsNullOrEmpty(s.LastRoomId)) RoomId = s.LastRoomId;
@@ -106,8 +109,9 @@ public partial class MainViewModel : ObservableObject
         RoomId = roomId;
         Password = createPass;
 
-        _logger.LogInformation("Creating room: {Room}", roomId);
-        _window?.ShowCreatedRoom(roomId);
+            _logger.LogInformation("Creating room: {Room}", roomId);
+            LogLines.Add($"[INFO] 创建房间: {roomId}");
+            _window?.ShowCreatedRoom(roomId);
 
         var room = new RoomOptions { RoomId = roomId, Password = createPass };
         var advanced = GetAdvanced();
