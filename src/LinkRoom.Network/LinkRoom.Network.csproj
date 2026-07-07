@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>LinkRoom.Network</RootNamespace>
+    <AssemblyName>LinkRoom.Network</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LinkRoom.Core\LinkRoom.Core.csproj" />
+  </ItemGroup>
+
+</Project>

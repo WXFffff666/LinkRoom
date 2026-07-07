@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RootNamespace>LinkRoom</RootNamespace>
+    <AssemblyName>LinkRoom</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LinkRoom.Gui\LinkRoom.Gui.csproj" />
+    <ProjectReference Include="..\LinkRoom.Core\LinkRoom.Core.csproj" />
+    <ProjectReference Include="..\LinkRoom.Network\LinkRoom.Network.csproj" />
+  </ItemGroup>
+
+</Project>

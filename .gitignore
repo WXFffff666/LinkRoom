@@ -1,0 +1,23 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+.vs/
+*.DotSettings.user
+launchSettings.json
+
+# EasyTier runtime assets (fetched at build time)
+src/LinkRoom.Core/Assets/easytier/*.exe
+src/LinkRoom.Core/Assets/easytier/*.dll
+src/LinkRoom.Core/Assets/easytier/*.sys
+src/LinkRoom.Core/Assets/easytier/*.lib
+src/LinkRoom.Core/Assets/easytier/*.cat
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Publish output
+publish/
