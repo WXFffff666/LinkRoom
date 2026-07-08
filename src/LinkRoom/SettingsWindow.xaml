@@ -14,7 +14,7 @@
             <!-- Listener Port -->
             <TextBlock Text="监听端口" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
             <TextBlock Text="EasyTier 核心使用的 P2P 通信端口" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
-            <TextBox Padding="8,6" Text="{Binding ListenerPort}" BorderBrush="#E5E5EA"
+            <TextBox Padding="8,6" Text="{Binding ListenerPort, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA"
                      ToolTip="默认 11010, 范围 1024-65535" Margin="0,0,0,16"/>
 
             <!-- Shared Node -->
@@ -39,7 +39,7 @@
             <!-- Reconnect -->
             <TextBlock Text="自动重连" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
             <TextBlock Text="掉线后自动重试次数" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
-            <TextBox Padding="8,6" Text="{Binding MaxReconnectAttempts}" BorderBrush="#E5E5EA"
+            <TextBox Padding="8,6" Text="{Binding MaxReconnectAttempts, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA"
                      ToolTip="默认 5 次，0 表示不重连" Margin="0,0,0,16"/>
 
             <!-- Log Level -->
