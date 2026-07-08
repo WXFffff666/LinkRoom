@@ -1,18 +1,23 @@
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Controls;
+using LinkRoom.Core;
 
 namespace LinkRoom;
 
 public partial class SettingsWindow : Window
 {
-    public SettingsWindow(Gui.MainViewModel vm)
-    {
-        InitializeComponent();
-        DataContext = vm;
-    }
+    public SettingsWindow(Gui.MainViewModel vm) { InitializeComponent(); DataContext = vm; }
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void ScanGamePorts_Click(object sender, RoutedEventArgs e)
+    {
+        GamePortResult.Text = "扫描中...";
+        var open = GamePortScanner.ScanListeningGamePorts();
+        GamePortResult.Text = open.Count == 0
+            ? "未检测到已知游戏端口。可手动在'监听端口'中设置。"
+            : "检测到: " + string.Join(", ", open.Select(p => $"{p.Name}({p.Port})"));
+    }
 
     private void RunSelfCheck_Click(object sender, RoutedEventArgs e)
     {

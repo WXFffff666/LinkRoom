@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using System.Text;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LinkRoom.Core;
@@ -22,6 +23,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] string _roomId = "", _password = "", _connState = "Idle", _connType = "";
     [ObservableProperty] string _natType = "", _ipv4 = "", _ipv6 = "", _latency = "", _lossRate = "";
     [ObservableProperty] int _peerCount;
+    public ObservableCollection<string> Peers { get; } = new();
     [ObservableProperty] string _statusText = "\u5c31\u7eea", _statusDetail = "\u8f93\u5165\u623f\u95f4\u53f7\u6216\u70b9\u51fb\u521b\u5efa\u623f\u95f4";
     [ObservableProperty] bool _isSharedNodeEnabled, _isUpnpDisabled = true;
     [ObservableProperty] string _sharedNodeUrls = "", _logLevel = "Info", _customStunServers = "", _staticVirtualIp = "";
@@ -50,6 +52,7 @@ public partial class MainViewModel : ObservableObject
     bool RoomValid => !string.IsNullOrWhiteSpace(RoomId) && RoomId.Length is >= 3 and <= 64 && !RoomId.Any(char.IsWhiteSpace);
     bool PwValid => Password.Length <= 128;
     bool CanConnect => RoomValid && _sm.CurrentState is ConnectionState.Idle or ConnectionState.Disconnected;
+    bool CanCreate => _sm.CurrentState is ConnectionState.Idle or ConnectionState.Disconnected;
     bool CanDisconnect => _sm.CurrentState is ConnectionState.Connected or ConnectionState.Monitoring or ConnectionState.Connecting or ConnectionState.Reconnecting;
 
     AdvancedOptions Adv() => new()
@@ -73,7 +76,7 @@ public partial class MainViewModel : ObservableObject
         MaxReconnectAttempts = MaxReconnectAttempts, StaticVirtualIp = StaticVirtualIp, ListenerPort = ListenerPort,
     };
 
-    [RelayCommand(CanExecute = nameof(CanConnect))]
+    [RelayCommand(CanExecute = nameof(CanCreate))]
     async Task CreateRoomAsync()
     {
         var id = GenId(); var pw = _win?.GetCreatePassword() ?? ""; RoomId = id; Password = pw;
@@ -123,6 +126,7 @@ public partial class MainViewModel : ObservableObject
             try
             {
                 await Task.Delay(3000, ct); var ps = await _cli.GetPeersAsync(ct); PeerCount = ps.Length;
+                Application.Current?.Dispatcher.InvokeAsync(() => { Peers.Clear(); foreach (var p in ps) Peers.Add($"{p.IPv4 ?? "?"} | NAT:{p.NatType ?? "?"} | {p.LatencyMs?.ToString("F0") ?? "?"}ms | {p.Cost ?? "?"}"); });
                 if (ps.Length > 0) { var p = ps[0]; NatType = p.NatType ?? ""; Latency = (p.LatencyMs?.ToString("F1") ?? "") + "ms"; LossRate = p.LossRate?.ToString("P1") ?? ""; ConnType = p.Cost ?? ""; if (_sm.CurrentState == ConnectionState.Connected) _sm.Monitoring(); }
             }
             catch (OperationCanceledException) { break; } catch { }

@@ -60,6 +60,17 @@
 
             <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#8E8E93" HorizontalAlignment="Center"
                        Margin="0,10,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
+
+            <!-- Peer list (visible when connected) -->
+            <ItemsControl ItemsSource="{Binding Peers}" Margin="0,8,0,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#F5F5F7" CornerRadius="6" Padding="8,6" Margin="0,2">
+                            <TextBlock FontSize="11" Foreground="#6E6E73" TextWrapping="Wrap"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
 
         <Border Grid.Row="2" Padding="6" Background="Transparent">
