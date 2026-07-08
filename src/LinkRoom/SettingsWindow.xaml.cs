@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Windows;
 using LinkRoom.Core;
+using LinkRoom.Network;
+using Microsoft.Extensions.Logging;
 
 namespace LinkRoom;
 
@@ -9,6 +11,24 @@ public partial class SettingsWindow : Window
     public SettingsWindow(Gui.MainViewModel vm) { InitializeComponent(); DataContext = vm; }
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+#pragma warning disable VSTHRD100 // async void is required for WPF event handlers
+    private async void TestNat_Click(object sender, RoutedEventArgs e)
+#pragma warning restore VSTHRD100
+    {
+        NatTestResult.Text = "检测中...";
+        try
+        {
+            var lf = LoggerFactory.Create(b => b.AddDebug());
+            var detector = new StunNatDetector(lf.CreateLogger<StunNatDetector>());
+            var ns = new NetworkInfoService(detector, lf.CreateLogger<NetworkInfoService>());
+            var snap = await ns.CaptureAsync().ConfigureAwait(true);
+            NatTestResult.Text = snap.StunReachable
+                ? $"NAT: {snap.NatType}\nPublic IPv4: {snap.PublicIPv4 ?? "none"}\nUDP: {(snap.UdpReachable ? "reachable" : "blocked")}"
+                : "STUN unreachable";
+        }
+        catch (Exception ex) { NatTestResult.Text = $"Error: {ex.Message}"; }
+    }
 
     private void ScanGamePorts_Click(object sender, RoutedEventArgs e)
     {

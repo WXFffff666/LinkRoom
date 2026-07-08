@@ -40,8 +40,11 @@ public static class RuntimeAssetExtractor
         {
             var resName = $"easytier.{name}";
             using var stream = asm.GetManifestResourceStream(resName);
-            if (stream == null) continue;
-
+            if (stream == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"RuntimeAsset: {resName} NOT FOUND in embedded resources");
+                continue;
+            }
             var dest = Path.Combine(_runtimeDir, name);
             using var fs = File.Create(dest);
             stream.CopyTo(fs);

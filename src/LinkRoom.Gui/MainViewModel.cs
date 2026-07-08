@@ -70,6 +70,7 @@ public partial class MainViewModel : ObservableObject
     void L(string m) { LogLines.Add($"[{DateTime.Now:HH:mm:ss}] {m}"); _log.LogInformation(m); }
 
     static string GenId() { var b = RandomNumberGenerator.GetBytes(8); var sb = new StringBuilder(8); const string c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; for (int i = 0; i < 8; i++) sb.Append(c[b[i] % c.Length]); return sb.ToString(); }
+    static string GenPw() { var b = RandomNumberGenerator.GetBytes(6); var sb = new StringBuilder(6); const string c = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"; for (int i = 0; i < 6; i++) sb.Append(c[b[i] % c.Length]); return sb.ToString(); }
 
     async Task<NetworkSnapshot?> DetectAsync()
     { try { var s = await _dc.GetAsync(); NatType = s.NatType.ToString(); Ipv4 = s.PublicIPv4 ?? ""; return s; } catch { L("NAT detection failed"); return null; } }
@@ -85,16 +86,21 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCreate))]
     async Task CreateRoomAsync()
     {
-        var id = GenId(); var pw = _win?.GetCreatePassword() ?? ""; RoomId = id; Password = pw;
-        L($"Creating room: {id}"); _win?.ShowCreatedRoom(id);
-        await ConnectInternalAsync(new RoomOptions { RoomId = id, Password = pw });
+        try {
+            var id = GenId(); var pw = _win?.GetCreatePassword() ?? ""; if (string.IsNullOrEmpty(pw)) pw = GenPw();
+            RoomId = id; Password = pw;
+            L($"Creating room: {id}"); _win?.ShowCreatedRoom(id);
+            await ConnectInternalAsync(new RoomOptions { RoomId = id, Password = pw });
+        } catch (Exception ex) { L($"Create room error: {ex.Message}"); StatusText = "创建失败"; StatusDetail = ex.Message; }
     }
 
     [RelayCommand(CanExecute = nameof(CanConnect))]
     async Task ConnectAsync()
     {
-        L($"Joining room: {RoomId.Trim()}");
-        await ConnectInternalAsync(new RoomOptions { RoomId = RoomId.Trim(), Password = Password });
+        try {
+            L($"Joining room: {RoomId.Trim()}");
+            await ConnectInternalAsync(new RoomOptions { RoomId = RoomId.Trim(), Password = Password });
+        } catch (Exception ex) { L($"Join room error: {ex.Message}"); StatusText = "加入失败"; StatusDetail = ex.Message; }
     }
 
     async Task ConnectInternalAsync(RoomOptions room)

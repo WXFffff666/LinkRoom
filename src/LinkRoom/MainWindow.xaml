@@ -20,7 +20,8 @@
                     BorderThickness="0" Click="OpenLog_Click" Cursor="Hand" DockPanel.Dock="Right"/>
         </DockPanel>
 
-        <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="40,0">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel VerticalAlignment="Center" Margin="40,0">
             <TextBlock Text="LinkRoom" FontSize="24" FontWeight="Bold" Foreground="#1D1D1F" HorizontalAlignment="Center" Margin="0,0,0,4"/>
             <TextBlock Text="P2P 联机 · 创建或加入房间" FontSize="11" Foreground="#8E8E93" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
@@ -74,6 +75,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </StackPanel>
+        </ScrollViewer>
 
         <Border Grid.Row="2" Padding="6" Background="Transparent">
             <DockPanel>

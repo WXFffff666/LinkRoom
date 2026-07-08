@@ -31,8 +31,8 @@ public sealed class EasyTierConfigBuilder
         // Validate
         if (string.IsNullOrWhiteSpace(room.RoomId) || room.RoomId.Length < 3 || room.RoomId.Length > 64)
             throw new ArgumentException("Room ID must be 3-64 characters.");
-        if (string.IsNullOrEmpty(room.Password) || room.Password.Length > 128)
-            throw new ArgumentException("Password must be non-empty and max 128 characters.");
+        if (room.Password.Length > 128)
+            throw new ArgumentException("Password max 128 characters."); // empty = no password
 
         // Build TOML config file
         var toml = BuildToml(room, snapshot, advanced);
@@ -59,7 +59,8 @@ public sealed class EasyTierConfigBuilder
         sb.AppendLine("# LinkRoom auto-generated EasyTier config");
         sb.AppendLine($"[network_identity]");
         sb.AppendLine($"network_name = \"{EscapeTomlString(room.RoomId)}\"");
-        sb.AppendLine($"network_secret = \"{EscapeTomlString(room.Password)}\"");
+        if (!string.IsNullOrEmpty(room.Password))
+            sb.AppendLine($"network_secret = \"{EscapeTomlString(room.Password)}\"");
         sb.AppendLine();
 
         sb.AppendLine("[flags]");
