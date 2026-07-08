@@ -11,215 +11,121 @@ namespace LinkRoom.Gui;
 
 public partial class MainViewModel : ObservableObject
 {
-    public static readonly ObservableCollection<string> LogLines = new() { "LinkRoom 启动" };
-    public string LogText => string.Join(Environment.NewLine, LogLines);
+    public static readonly ObservableCollection<string> LogLines = new() { "[INFO] LinkRoom started" };
 
-    private readonly EasyTierConfigBuilder _configBuilder;
-    private readonly EasyTierProcessService _processService;
-    private readonly EasyTierCliClient _cliClient;
-    private readonly ConnectionStateMachine _stateMachine;
-    private readonly PathSelectionStrategy _pathSelector;
-    private readonly DetectionCache _detectionCache;
-    private readonly NetworkInfoService _networkService;
-    private readonly SettingsService _settings;
-    private readonly ILogger<MainViewModel> _logger;
-    private CancellationTokenSource? _monitorCts;
-    private IMainWindowView? _window;
-    private EasyTierLaunchConfig? _activeConfig;
+    readonly EasyTierConfigBuilder _cfg; readonly EasyTierProcessService _proc; readonly EasyTierCliClient _cli;
+    readonly ConnectionStateMachine _sm; readonly PathSelectionStrategy _ps;
+    readonly DetectionCache _dc; readonly NetworkInfoService _ns; readonly SettingsService _ss;
+    readonly ILogger<MainViewModel> _log;
+    CancellationTokenSource? _mon; IMainWindowView? _win; EasyTierLaunchConfig? _acfg;
 
-    // === Connection Properties ===
-    [ObservableProperty] private string _roomId = "";
-    [ObservableProperty] private string _password = "";
-    [ObservableProperty] private string _connectionStateDisplay = "Idle";
-    [ObservableProperty] private string _connectionType = "";
-    [ObservableProperty] private string _natType = "";
-    [ObservableProperty] private string _ipv4 = "";
-    [ObservableProperty] private string _ipv6 = "";
-    [ObservableProperty] private string _latency = "";
-    [ObservableProperty] private string _lossRate = "";
-    [ObservableProperty] private int _peerCount;
-    [ObservableProperty] private string _statusText = "就绪";
-    [ObservableProperty] private string _statusDetail = "选择「创建房间」或「加入房间」开始";
+    [ObservableProperty] string _roomId = "", _password = "", _connState = "Idle", _connType = "";
+    [ObservableProperty] string _natType = "", _ipv4 = "", _ipv6 = "", _latency = "", _lossRate = "";
+    [ObservableProperty] int _peerCount;
+    [ObservableProperty] string _statusText = "\u5c31\u7eea", _statusDetail = "\u8f93\u5165\u623f\u95f4\u53f7\u6216\u70b9\u51fb\u521b\u5efa\u623f\u95f4";
+    [ObservableProperty] bool _isSharedNodeEnabled, _isUpnpDisabled = true;
+    [ObservableProperty] string _sharedNodeUrls = "", _logLevel = "Info", _customStunServers = "", _staticVirtualIp = "";
+    [ObservableProperty] int _maxReconnectAttempts = 5, _listenerPort = 11010;
 
-    // === Advanced Properties ===
-    [ObservableProperty] private bool _isSharedNodeEnabled;
-    [ObservableProperty] private string _sharedNodeUrls = "";
-    [ObservableProperty] private string _logLevel = "Info";
-    [ObservableProperty] private bool _isUpnpDisabled = true;
-    [ObservableProperty] private string _customStunServers = "";
-    [ObservableProperty] private int _maxReconnectAttempts = 5;
-    [ObservableProperty] private string _staticVirtualIp = "";
-
-    public MainViewModel(
-        EasyTierConfigBuilder configBuilder, EasyTierProcessService processService,
-        EasyTierCliClient cliClient, ConnectionStateMachine stateMachine,
-        PathSelectionStrategy pathSelector, DetectionCache detectionCache,
-        NetworkInfoService networkService, SettingsService settings,
-        ILogger<MainViewModel> logger)
+    public MainViewModel(EasyTierConfigBuilder cfg, EasyTierProcessService proc, EasyTierCliClient cli,
+        ConnectionStateMachine sm, PathSelectionStrategy ps, DetectionCache dc,
+        NetworkInfoService ns, SettingsService ss, ILogger<MainViewModel> log)
     {
-        _configBuilder = configBuilder; _processService = processService;
-        _cliClient = cliClient; _stateMachine = stateMachine;
-        _pathSelector = pathSelector; _detectionCache = detectionCache;
-        _networkService = networkService; _settings = settings;
-        _logger = logger;
-        _stateMachine.StateChanged += OnStateChanged;
+        _cfg = cfg; _proc = proc; _cli = cli; _sm = sm; _ps = ps; _dc = dc; _ns = ns; _ss = ss; _log = log;
+        _sm.StateChanged += (_, e) => { ConnState = e.New.ToString(); ConnectCommand.NotifyCanExecuteChanged(); DisconnectCommand.NotifyCanExecuteChanged(); };
     }
 
-    public void SetWindow(IMainWindowView w) { _window = w; }
+    public void SetWindow(IMainWindowView w) => _win = w;
+
     public void RestoreSettings(AppSettings s)
     {
         if (!string.IsNullOrEmpty(s.LastRoomId)) RoomId = s.LastRoomId;
         IsSharedNodeEnabled = s.IsSharedNodeEnabled; SharedNodeUrls = s.SharedNodeUrls ?? "";
         LogLevel = s.LogLevel ?? "Info"; IsUpnpDisabled = s.IsUpnpDisabled;
-        CustomStunServers = s.CustomStunServers ?? "";
+        CustomStunServers = s.CustomStunServers ?? ""; StaticVirtualIp = s.StaticVirtualIp ?? "";
         MaxReconnectAttempts = s.MaxReconnectAttempts > 0 ? s.MaxReconnectAttempts : 5;
-        StaticVirtualIp = s.StaticVirtualIp ?? "";
+        ListenerPort = s.ListenerPort > 0 ? s.ListenerPort : 11010;
     }
 
-    private bool IsRoomIdValid => !string.IsNullOrWhiteSpace(RoomId) && RoomId.Length >= 3 && RoomId.Length <= 64 && !RoomId.Any(char.IsWhiteSpace) && RoomId.All(c => c >= 32 && c <= 126);
-    private bool IsPasswordValid => Password.Length <= 128;
-    private bool CanConnect => IsRoomIdValid && IsPasswordValid && _stateMachine.CurrentState is Core.ConnectionState.Idle or Core.ConnectionState.Disconnected;
-    private bool CanDisconnect => _stateMachine.CurrentState is Core.ConnectionState.Connected or Core.ConnectionState.Monitoring or Core.ConnectionState.Connecting or Core.ConnectionState.Reconnecting;
-    private bool CanCreateRoom => _stateMachine.CurrentState is Core.ConnectionState.Idle or Core.ConnectionState.Disconnected;
+    bool RoomValid => !string.IsNullOrWhiteSpace(RoomId) && RoomId.Length is >= 3 and <= 64 && !RoomId.Any(char.IsWhiteSpace);
+    bool PwValid => Password.Length <= 128;
+    bool CanConnect => RoomValid && _sm.CurrentState is ConnectionState.Idle or ConnectionState.Disconnected;
+    bool CanDisconnect => _sm.CurrentState is ConnectionState.Connected or ConnectionState.Monitoring or ConnectionState.Connecting or ConnectionState.Reconnecting;
 
-    private AdvancedOptions GetAdvanced() => new()
+    AdvancedOptions Adv() => new()
     {
-        IsSharedNodeEnabled = IsSharedNodeEnabled, SharedNodeUrls = SharedNodeUrls,
-        LogLevel = LogLevel, IsUpnpDisabled = IsUpnpDisabled,
-        CustomStunServers = CustomStunServers, MaxReconnectAttempts = MaxReconnectAttempts,
-        StaticVirtualIp = StaticVirtualIp,
+        IsSharedNodeEnabled = IsSharedNodeEnabled, SharedNodeUrls = SharedNodeUrls, LogLevel = LogLevel,
+        IsUpnpDisabled = IsUpnpDisabled, CustomStunServers = CustomStunServers,
+        MaxReconnectAttempts = MaxReconnectAttempts, StaticVirtualIp = StaticVirtualIp, ListenerPort = ListenerPort,
     };
 
-    /// <summary>Generates a random room ID (12 alphanumeric chars).</summary>
-    private static string GenerateRoomId()
+    void L(string m) { LogLines.Add($"[{DateTime.Now:HH:mm:ss}] {m}"); _log.LogInformation(m); }
+
+    static string GenId() { var b = RandomNumberGenerator.GetBytes(8); var sb = new StringBuilder(8); const string c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; for (int i = 0; i < 8; i++) sb.Append(c[b[i] % c.Length]); return sb.ToString(); }
+
+    async Task<NetworkSnapshot?> DetectAsync()
+    { try { var s = await _dc.GetAsync(); NatType = s.NatType.ToString(); Ipv4 = s.PublicIPv4 ?? ""; return s; } catch { L("NAT detection failed"); return null; } }
+
+    AppSettings Save() => new()
     {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        var bytes = RandomNumberGenerator.GetBytes(12);
-        var sb = new StringBuilder(12);
-        for (int i = 0; i < 12; i++) sb.Append(chars[bytes[i] % chars.Length]);
-        return sb.ToString();
-    }
+        LastRoomId = RoomId.Trim(), IsSharedNodeEnabled = IsSharedNodeEnabled, SharedNodeUrls = SharedNodeUrls,
+        LogLevel = LogLevel, IsUpnpDisabled = IsUpnpDisabled, CustomStunServers = CustomStunServers,
+        MaxReconnectAttempts = MaxReconnectAttempts, StaticVirtualIp = StaticVirtualIp, ListenerPort = ListenerPort,
+    };
 
-    // === CREATE ROOM ===
-    [RelayCommand(CanExecute = nameof(CanCreateRoom))]
-    private async Task CreateRoomAsync()
-    {
-        var roomId = GenerateRoomId();
-        var createPass = _window?.GetCreatePassword() ?? "";
-        RoomId = roomId;
-        Password = createPass;
-
-            _logger.LogInformation("Creating room: {Room}", roomId);
-            LogLines.Add($"[INFO] 创建房间: {roomId}");
-            _window?.ShowCreatedRoom(roomId);
-
-        var room = new RoomOptions { RoomId = roomId, Password = createPass };
-        var advanced = GetAdvanced();
-
-        try
-        {
-            _stateMachine.UserConnect();
-            StatusText = "创建房间中...";
-            StatusDetail = "正在探测网络...";
-
-            NetworkSnapshot? snapshot = null;
-            try { snapshot = await _detectionCache.GetAsync(); NatType = snapshot.NatType.ToString(); }
-            catch (Exception ex) { _logger.LogWarning(ex, "Detection failed"); }
-
-            _stateMachine.DetectionComplete();
-            var path = _pathSelector.Evaluate(snapshot, advanced);
-
-            _activeConfig = await _configBuilder.BuildAsync(room, snapshot, advanced);
-            await _processService.StartAsync(_activeConfig.ConfigFilePath, "127.0.0.1:15888", "linkroom");
-            _stateMachine.EasyTierReady();
-            StatusText = "房间已创建";
-            StatusDetail = $"房间号: {roomId} · NAT: {snapshot?.NatType}";
-            ConnectionStateDisplay = "Connected";
-
-            _settings.Save(new AppSettings { LastRoomId = roomId, IsSharedNodeEnabled = IsSharedNodeEnabled, SharedNodeUrls = SharedNodeUrls, LogLevel = LogLevel, IsUpnpDisabled = IsUpnpDisabled, MaxReconnectAttempts = MaxReconnectAttempts, StaticVirtualIp = StaticVirtualIp });
-
-            _monitorCts = new CancellationTokenSource();
-            _ = MonitorPeersAsync(_monitorCts.Token);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Create room failed");
-            StatusText = "创建失败"; StatusDetail = ex.Message;
-            _stateMachine.UserDisconnect();
-        }
-        finally { _activeConfig?.Cleanup(); }
-        ConnectCommand.NotifyCanExecuteChanged(); DisconnectCommand.NotifyCanExecuteChanged();
-    }
-
-    // === JOIN ROOM (Connect) ===
     [RelayCommand(CanExecute = nameof(CanConnect))]
-    private async Task ConnectAsync()
+    async Task CreateRoomAsync()
     {
-        var room = new RoomOptions { RoomId = RoomId.Trim(), Password = Password };
-        var advanced = GetAdvanced();
+        var id = GenId(); var pw = _win?.GetCreatePassword() ?? ""; RoomId = id; Password = pw;
+        L($"Creating room: {id}"); _win?.ShowCreatedRoom(id);
+        await ConnectInternalAsync(new RoomOptions { RoomId = id, Password = pw });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanConnect))]
+    async Task ConnectAsync()
+    {
+        L($"Joining room: {RoomId.Trim()}");
+        await ConnectInternalAsync(new RoomOptions { RoomId = RoomId.Trim(), Password = Password });
+    }
+
+    async Task ConnectInternalAsync(RoomOptions room)
+    {
+        var adv = Adv(); _sm.UserConnect(); StatusText = "connecting...";
         try
         {
-            _stateMachine.UserConnect();
-            StatusText = "检测网络中..."; StatusDetail = "正在探测 NAT 类型...";
-            NetworkSnapshot? snapshot = null;
-            try { snapshot = await _detectionCache.GetAsync(); NatType = snapshot.NatType.ToString(); }
-            catch (Exception ex) { _logger.LogWarning(ex, "Detection failed"); }
-            _stateMachine.DetectionComplete();
-
-            var path = _pathSelector.Evaluate(snapshot, advanced);
-            _activeConfig = await _configBuilder.BuildAsync(room, snapshot, advanced);
-
-            StatusText = "连接中..."; StatusDetail = "正在启动 EasyTier 核心...";
-            await _processService.StartAsync(_activeConfig.ConfigFilePath, "127.0.0.1:15888", "linkroom");
-            _stateMachine.EasyTierReady();
-            StatusText = "已连接"; StatusDetail = $"NAT: {snapshot?.NatType}, 路径: {path.Strategy}";
-            ConnectionStateDisplay = "Connected";
-
-            _settings.Save(new AppSettings { LastRoomId = RoomId.Trim(), IsSharedNodeEnabled = IsSharedNodeEnabled, SharedNodeUrls = SharedNodeUrls, LogLevel = LogLevel, IsUpnpDisabled = IsUpnpDisabled, MaxReconnectAttempts = MaxReconnectAttempts, StaticVirtualIp = StaticVirtualIp });
-            _monitorCts = new CancellationTokenSource();
-            _ = MonitorPeersAsync(_monitorCts.Token);
+            var snap = await DetectAsync(); _sm.DetectionComplete();
+            var path = _ps.Evaluate(snap, adv);
+            _acfg = await _cfg.BuildAsync(room, snap, adv);
+            await _proc.StartAsync(_acfg.ConfigFilePath, "127.0.0.1:15888", "linkroom");
+            _sm.EasyTierReady(); StatusText = "connected";
+            StatusDetail = $"NAT:{snap?.NatType} path:{path.Strategy} port:{adv.ListenerPort}";
+            ConnState = "Connected"; _ss.Save(Save());
+            _mon = new CancellationTokenSource(); _ = MonitorAsync(_mon.Token);
+            L($"Connected: room={room.RoomId} nat={snap?.NatType} path={path.Strategy}");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Connect failed");
-            StatusText = "连接失败"; StatusDetail = ex.Message;
-            _stateMachine.UserDisconnect();
-        }
-        finally { _activeConfig?.Cleanup(); }
-        ConnectCommand.NotifyCanExecuteChanged(); DisconnectCommand.NotifyCanExecuteChanged();
+        catch (Exception ex) { L($"Error: {ex.Message}"); StatusText = "failed"; StatusDetail = ex.Message; _sm.UserDisconnect(); }
+        finally { _acfg?.Cleanup(); ConnectCommand.NotifyCanExecuteChanged(); DisconnectCommand.NotifyCanExecuteChanged(); }
     }
 
     [RelayCommand(CanExecute = nameof(CanDisconnect))]
-    private async Task DisconnectAsync()
+    async Task DisconnectAsync()
     {
-        await (_monitorCts?.CancelAsync() ?? Task.CompletedTask);
-        _stateMachine.UserDisconnect();
-        await _processService.StopAsync();
-        StatusText = "已断开"; StatusDetail = "";
-        ConnectionStateDisplay = "Disconnected";
+        await (_mon?.CancelAsync() ?? Task.CompletedTask); _sm.UserDisconnect();
+        await _proc.StopAsync(); StatusText = "disconnected"; StatusDetail = "";
+        ConnState = "Disconnected"; L("Disconnected");
         ConnectCommand.NotifyCanExecuteChanged(); DisconnectCommand.NotifyCanExecuteChanged();
     }
 
-    private void OnStateChanged(object? s, (ConnectionState Old, ConnectionState New) e)
-    {
-        ConnectionStateDisplay = e.New.ToString();
-        ConnectCommand.NotifyCanExecuteChanged(); DisconnectCommand.NotifyCanExecuteChanged();
-        CreateRoomCommand.NotifyCanExecuteChanged();
-    }
-
-    private async Task MonitorPeersAsync(CancellationToken ct)
+    async Task MonitorAsync(CancellationToken ct)
     {
         while (!ct.IsCancellationRequested)
         {
             try
             {
-                await Task.Delay(3000, ct);
-                var peers = await _cliClient.GetPeersAsync(ct);
-                PeerCount = peers.Length;
-                if (peers.Length > 0) { var p = peers[0]; NatType = p.NatType ?? ""; Latency = (p.LatencyMs?.ToString("F1") ?? "") + " ms"; LossRate = p.LossRate?.ToString("P1") ?? ""; Ipv4 = p.IPv4 ?? ""; Ipv6 = p.IPv6 ?? ""; ConnectionType = p.Cost ?? ""; if (_stateMachine.CurrentState == Core.ConnectionState.Connected) _stateMachine.Monitoring(); }
+                await Task.Delay(3000, ct); var ps = await _cli.GetPeersAsync(ct); PeerCount = ps.Length;
+                if (ps.Length > 0) { var p = ps[0]; NatType = p.NatType ?? ""; Latency = (p.LatencyMs?.ToString("F1") ?? "") + "ms"; LossRate = p.LossRate?.ToString("P1") ?? ""; ConnType = p.Cost ?? ""; if (_sm.CurrentState == ConnectionState.Connected) _sm.Monitoring(); }
             }
-            catch (OperationCanceledException) { break; }
-            catch { }
+            catch (OperationCanceledException) { break; } catch { }
         }
     }
 

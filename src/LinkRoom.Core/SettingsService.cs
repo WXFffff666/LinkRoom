@@ -98,4 +98,5 @@ public sealed record AppSettings
     public string? CustomStunServers { get; set; }
     public int MaxReconnectAttempts { get; set; } = 5;
     public string? StaticVirtualIp { get; set; }
+    public int ListenerPort { get; set; } = 11010;
 }

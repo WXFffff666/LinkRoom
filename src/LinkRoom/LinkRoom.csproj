@@ -5,6 +5,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>linkroom.ico</ApplicationIcon>
     <RootNamespace>LinkRoom</RootNamespace>
     <AssemblyName>LinkRoom</AssemblyName>
     <!-- Single-file publish config (inline to ensure WPF SDK applies it) -->

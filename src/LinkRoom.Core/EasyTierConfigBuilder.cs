@@ -75,6 +75,10 @@ public sealed class EasyTierConfigBuilder
             sb.AppendLine("dhcp = true");
         }
 
+        // Listener port
+        sb.AppendLine($"# P2P listener port");
+        sb.AppendLine($"listeners = [\"tcp://0.0.0.0:{advanced.ListenerPort}\", \"udp://0.0.0.0:{advanced.ListenerPort}\"]");
+
         // NAT-specific flags from snapshot
         if (snapshot != null)
         {
@@ -161,6 +165,7 @@ public record AdvancedOptions
     public string? CustomStunServers { get; init; }
     public int MaxReconnectAttempts { get; init; } = 5;
     public string? StaticVirtualIp { get; init; }
+    public int ListenerPort { get; init; } = 11010;
 }
 
 /// <summary>

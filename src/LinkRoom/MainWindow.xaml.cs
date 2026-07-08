@@ -25,29 +25,15 @@ public partial class MainWindow : Window, IMainWindowView
 
     private void OpenSettings_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is Gui.MainViewModel vm)
-        {
-            var dlg = new SettingsWindow(vm);
-            dlg.Owner = this;
-            dlg.ShowDialog();
-        }
+        if (DataContext is Gui.MainViewModel vm) { var d = new SettingsWindow(vm); d.Owner = this; d.ShowDialog(); }
     }
 
     private void OpenLog_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is Gui.MainViewModel vm)
-        {
-            var dlg = new LogWindow(Gui.MainViewModel.LogLines);
-            dlg.Owner = this;
-            dlg.ShowDialog();
-        }
+        if (DataContext is Gui.MainViewModel vm) { var d = new LogWindow(Gui.MainViewModel.LogLines); d.Owner = this; d.ShowDialog(); }
     }
 
-    public void ShowCreatedRoom(string roomId)
-        => Dispatcher.Invoke(() => { CreatedRoomId.Text = roomId; CreatedRoomPanel.Visibility = Visibility.Visible; });
-
+    public void ShowCreatedRoom(string id) => Dispatcher.Invoke(() => { CreatedRoomId.Text = id; CreatedRoomPanel.Visibility = Visibility.Visible; });
     public string GetCreatePassword() => PasswordBox.Password;
-
-    public void AppendLog(string line)
-        => Dispatcher.Invoke(() => Gui.MainViewModel.LogLines.Add(line));
+    public void AppendLog(string line) => Dispatcher.Invoke(() => Gui.MainViewModel.LogLines.Add(line));
 }
