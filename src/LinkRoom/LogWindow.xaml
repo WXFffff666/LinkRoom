@@ -4,8 +4,7 @@
         xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
         ui:WindowHelper.UseModernWindowStyle="True"
         Title="日志" Height="500" Width="600"
-        WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
-        Owner="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}">
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize">
 
     <Grid Margin="8">
         <Grid.RowDefinitions>

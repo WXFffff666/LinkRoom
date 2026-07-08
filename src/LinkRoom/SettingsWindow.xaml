@@ -4,8 +4,7 @@
         xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
         ui:WindowHelper.UseModernWindowStyle="True"
         Title="设置" Height="520" Width="400"
-        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
-        Owner="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}">
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="24,16">

@@ -50,6 +50,7 @@ public partial class MainViewModel : ObservableObject
         ListenerPort = s.ListenerPort > 0 ? s.ListenerPort : 11010;
         Mtu = s.Mtu is >= 576 and <= 1500 ? s.Mtu : 1380;
         PreferIPv6 = s.PreferIPv6; PortableMode = s.PortableMode;
+        DarkMode = s.DarkMode;
     }
 
     bool RoomValid => !string.IsNullOrWhiteSpace(RoomId) && RoomId.Length is >= 3 and <= 64 && !RoomId.Any(char.IsWhiteSpace);
@@ -78,6 +79,7 @@ public partial class MainViewModel : ObservableObject
         LastRoomId = RoomId.Trim(), IsSharedNodeEnabled = IsSharedNodeEnabled, SharedNodeUrls = SharedNodeUrls,
         LogLevel = LogLevel, IsUpnpDisabled = IsUpnpDisabled, CustomStunServers = CustomStunServers,
         MaxReconnectAttempts = MaxReconnectAttempts, StaticVirtualIp = StaticVirtualIp, ListenerPort = ListenerPort,
+        Mtu = Mtu, PreferIPv6 = PreferIPv6, PortableMode = PortableMode, DarkMode = DarkMode,
     };
 
     [RelayCommand(CanExecute = nameof(CanCreate))]

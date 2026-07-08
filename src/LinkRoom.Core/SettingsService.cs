@@ -102,4 +102,5 @@ public sealed record AppSettings
     public int Mtu { get; set; } = 1380;
     public bool PreferIPv6 { get; set; }
     public bool PortableMode { get; set; }
+    public bool DarkMode { get; set; }
 }
