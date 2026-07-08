@@ -145,20 +145,26 @@ public partial class MainViewModel : ObservableObject
 
     async Task MonitorAsync(CancellationToken ct)
     {
+        var prevIds = new HashSet<string>();
         while (!ct.IsCancellationRequested)
         {
             try
             {
                 await Task.Delay(3000, ct); var ps = await _cli.GetPeersAsync(ct); PeerCount = ps.Length;
+                var curIds = new HashSet<string>();
                 Application.Current?.Dispatcher.InvokeAsync(() =>
                 {
                     Peers.Clear();
                     for (int i = 0; i < ps.Length; i++)
                     {
-                        var p = ps[i];
-                        var role = i == 0 ? "👑" : "👤";
-                        Peers.Add($"{role} {p.IPv4 ?? "?"} | {p.Hostname ?? "?"} | {p.NatType ?? "?"} | {p.LatencyMs?.ToString("F0") ?? "?"}ms");
+                        var p = ps[i]; var id = p.IPv4 ?? p.Hostname ?? ""; curIds.Add(id);
+                        Peers.Add($"{(i == 0 ? "👑" : "👤")} {id} | {p.NatType ?? "?"} | {p.LatencyMs?.ToString("F0") ?? "?"}ms");
                     }
+                    // Detect disconnections
+                    foreach (var old in prevIds)
+                        if (!curIds.Contains(old) && prevIds.Count > 0)
+                            LogLines.Add($"[{DateTime.Now:HH:mm:ss}] 📢 {old} 已断开");
+                    prevIds.Clear(); foreach (var c in curIds) prevIds.Add(c);
                 });
                 if (ps.Length > 0) { var p = ps[0]; Latency = (p.LatencyMs?.ToString("F1") ?? "") + "ms"; LossRate = p.LossRate?.ToString("P1") ?? ""; ConnType = p.Cost ?? ""; if (_sm.CurrentState == ConnectionState.Connected) _sm.Monitoring(); }
             }

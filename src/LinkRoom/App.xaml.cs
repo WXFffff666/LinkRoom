@@ -11,7 +11,7 @@ namespace LinkRoom;
 
 public partial class App : Application
 {
-    const string CurrentVersion = "v1.7.0";
+    const string CurrentVersion = "v1.12.0";
 
     protected override void OnStartup(StartupEventArgs e)
     {

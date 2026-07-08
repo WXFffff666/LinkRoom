@@ -34,7 +34,7 @@ public partial class MainWindow : Window, IMainWindowView
     async Task CheckUpdateAsync()
     {
         UpdateLabel.Text = "checking...";
-        try { using var hc = new System.Net.Http.HttpClient(); hc.DefaultRequestHeaders.UserAgent.ParseAdd("LinkRoom"); var json = await hc.GetStringAsync("https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest"); var tag = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("tag_name").GetString(); UpdateLabel.Text = tag == "v1.11.0" ? "latest" : $"new {tag}"; }
+        try { using var hc = new System.Net.Http.HttpClient(); hc.DefaultRequestHeaders.UserAgent.ParseAdd("LinkRoom"); var json = await hc.GetStringAsync("https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest");             var tag = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("tag_name").GetString(); UpdateLabel.Text = tag == "v1.12.0" ? "latest" : $"new {tag}"; }
         catch { UpdateLabel.Text = "failed"; }
     }
 }
