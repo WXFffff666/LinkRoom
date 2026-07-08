@@ -59,6 +59,9 @@ public sealed class EasyTierProcessService : IDisposable
         if (!File.Exists(configFilePath))
             throw new FileNotFoundException($"Config file not found: {configFilePath}");
 
+        // Kill any leftover EasyTier processes from previous runs
+        KillOrphanProcesses();
+
         Directory.CreateDirectory(_logDir);
         var logFile = Path.Combine(_logDir, $"easytier-{DateTime.Now:yyyyMMdd-HHmmss}.log");
 
@@ -156,6 +159,19 @@ public sealed class EasyTierProcessService : IDisposable
         });
 
         File.AppendAllText(logFile, $"[{DateTime.Now:HH:mm:ss}] [{stream}] {sanitized}{Environment.NewLine}");
+    }
+
+    /// <summary>Kills any leftover easytier-core processes from previous runs.</summary>
+    static void KillOrphanProcesses()
+    {
+        try
+        {
+            foreach (var p in System.Diagnostics.Process.GetProcessesByName("easytier-core"))
+            {
+                try { p.Kill(entireProcessTree: true); p.WaitForExit(2000); } catch { }
+            }
+        }
+        catch { /* best effort */ }
     }
 
     public void Dispose()
