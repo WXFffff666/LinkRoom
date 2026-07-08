@@ -19,26 +19,41 @@ public partial class SettingsWindow : Window
 
     async void TestNat_Click(object s, RoutedEventArgs e)
     {
-        NatTestResult.Text = "检测中...";
+        NatTestResult.Text = "并发检测中（返回首个结果）...";
         var sb = new System.Text.StringBuilder();
-        var servers = new (string, int)[] { ("stun.l.google.com",19302),("stun1.l.google.com",19302),("stun.hot-chilli.net",3478),("stun.fitauto.ru",3478),("stun.syncthing.net",3478),("stun.internetcalls.com",3478),("stun.voip.aebc.com",3478),("stun.voipbuster.com",3478),("stun.voipstunt.com",3478) };
-        foreach (var (host, port) in servers)
+        var servers = new[] { ("stun.l.google.com",19302),("stun1.l.google.com",19302),("stun.hot-chilli.net",3478),("stun.fitauto.ru",3478),("stun.syncthing.net",3478),("stun.internetcalls.com",3478),("stun.voip.aebc.com",3478) };
+        // Concurrent: use Task.WhenAny to get first result, then cancel rest
+        using var masterCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var tasks = servers.Select(svr => ProbeAsync(svr.Item1, svr.Item2, masterCts.Token)).ToList();
+        try
         {
-            try
+            while (tasks.Count > 0)
             {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-                var addrs = await Dns.GetHostAddressesAsync(host, cts.Token);
-                var ip = addrs.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
-                if (ip == null) { sb.AppendLine($"⏭ {host} — no IPv4"); continue; }
-                using var client = new StunClient5389UDP(new IPEndPoint(ip, port), new IPEndPoint(IPAddress.Any, 0)) { ReceiveTimeout = TimeSpan.FromSeconds(10) };
-                await client.QueryAsync(cts.Token);
-                var nat = Classify(client.State);
-                sb.AppendLine($"✅ {host} → {nat} ({client.State.PublicEndPoint})");
+                var done = await Task.WhenAny(tasks);
+                tasks.Remove(done);
+                var res = await done;
+                if (res.Item2 != null) { sb.AppendLine($"✅ {res.Item1} → {res.Item2}"); break; }
+                else sb.AppendLine($"❌ {res.Item1}");
             }
-            catch (OperationCanceledException) { sb.AppendLine($"⏱ {host} — timeout"); }
-            catch { sb.AppendLine($"❌ {host} — error"); }
+            masterCts.Cancel(); // cancel remaining probes
         }
-        NatTestResult.Text = sb.Length == 0 ? "所有服务器无响应" : sb.ToString();
+        catch (OperationCanceledException) { sb.AppendLine("⏱ 所有服务器超时"); }
+        NatTestResult.Text = sb.Length == 0 ? "无可用 STUN 服务器" : sb.ToString();
+    }
+
+    static async Task<(string, string?)> ProbeAsync(string host, int port, CancellationToken ct)
+    {
+        try
+        {
+            var addrs = await Dns.GetHostAddressesAsync(host, ct);
+            var ip = addrs.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
+            if (ip == null) return (host, null);
+            using var client = new StunClient5389UDP(new IPEndPoint(ip, port), new IPEndPoint(IPAddress.Any, 0)) { ReceiveTimeout = TimeSpan.FromSeconds(8) };
+            await client.QueryAsync(ct);
+            var nat = Classify(client.State);
+            return (host, $"{nat} ({client.State.PublicEndPoint})");
+        }
+        catch { return (host, null); }
     }
 
     static Network.NatType Classify(STUN.StunResult.StunResult5389 s) => s.MappingBehavior switch
