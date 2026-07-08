@@ -1,12 +1,37 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using LinkRoom.Core;
 
 namespace LinkRoom;
 
 public partial class MainWindow : Window, IMainWindowView
 {
-    public MainWindow() => InitializeComponent();
+    public MainWindow()
+    {
+        InitializeComponent();
+        StateChanged += (_, _) =>
+        {
+            if (WindowState == WindowState.Minimized) { ShowInTaskbar = false; TrayHelper.Show(this); }
+            else if (WindowState == WindowState.Normal) { ShowInTaskbar = true; TrayHelper.Hide(); }
+        };
+        Closing += (_, _) => TrayHelper.Hide();
+        SourceInitialized += (_, _) =>
+        {
+            var hwnd = new WindowInteropHelper(this).Handle;
+            HwndSource.FromHwnd(hwnd)?.AddHook(WndProc);
+        };
+    }
+
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wp, IntPtr lp, ref bool handled)
+    {
+        if (msg == 0x0203) // WM_LBUTTONDBLCLK on tray icon
+        {
+            Show(); WindowState = WindowState.Normal; Activate();
+            handled = true;
+        }
+        return IntPtr.Zero;
+    }
 
     private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
     {

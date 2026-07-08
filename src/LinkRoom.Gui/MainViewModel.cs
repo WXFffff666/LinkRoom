@@ -28,7 +28,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] bool _isSharedNodeEnabled, _isUpnpDisabled = true;
     [ObservableProperty] string _sharedNodeUrls = "", _logLevel = "Info", _customStunServers = "", _staticVirtualIp = "";
     [ObservableProperty] int _maxReconnectAttempts = 5, _listenerPort = 11010, _mtu = 1380;
-    [ObservableProperty] bool _portableMode, _preferIPv6, _darkMode;
+    [ObservableProperty] bool _portableMode, _preferIPv6 = true, _darkMode, _smartHost;
 
     public MainViewModel(EasyTierConfigBuilder cfg, EasyTierProcessService proc, EasyTierCliClient cli,
         ConnectionStateMachine sm, PathSelectionStrategy ps, DetectionCache dc,
