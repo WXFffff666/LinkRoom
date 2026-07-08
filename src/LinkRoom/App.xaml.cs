@@ -1,4 +1,6 @@
 using System.IO;
+using System.Net.Http;
+using System.Text.Json;
 using System.Windows;
 using LinkRoom.Core;
 using LinkRoom.Gui;
@@ -9,9 +11,14 @@ namespace LinkRoom;
 
 public partial class App : Application
 {
+    const string CurrentVersion = "v1.7.0";
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Check for updates in background
+        _ = CheckForUpdatesAsync();
 
         string runtimeDir;
         try { runtimeDir = RuntimeAssetExtractor.EnsureExtracted("2.6.4"); }
@@ -44,5 +51,25 @@ public partial class App : Application
         var window = new MainWindow { DataContext = vm };
         vm.SetWindow(window);
         window.Show();
+    }
+
+    static async Task CheckForUpdatesAsync()
+    {
+        try
+        {
+            using var hc = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+            hc.DefaultRequestHeaders.UserAgent.ParseAdd("LinkRoom");
+            var json = await hc.GetStringAsync("https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest");
+            var tag = JsonDocument.Parse(json).RootElement.GetProperty("tag_name").GetString();
+            if (tag != null && tag != CurrentVersion)
+            {
+                var result = MessageBox.Show($"发现新版本 {tag}\n当前: {CurrentVersion}\n\n是否打开下载页面？",
+                    "LinkRoom 更新", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                if (result == MessageBoxResult.Yes)
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        { FileName = $"https://github.com/WXFffff666/LinkRoom/releases/tag/{tag}", UseShellExecute = true });
+            }
+        }
+        catch { /* network error — skip silently */ }
     }
 }

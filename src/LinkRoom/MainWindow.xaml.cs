@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using LinkRoom.Core;
+using iNKORE.UI.WPF.Modern;
 
 namespace LinkRoom;
 
@@ -10,6 +11,11 @@ public partial class MainWindow : Window, IMainWindowView
     public MainWindow()
     {
         InitializeComponent();
+        DataContextChanged += (_, _) =>
+        {
+            if (DataContext is Gui.MainViewModel vm)
+                vm.PropertyChanged += (_, e) => { if (e.PropertyName == "DarkMode") ThemeManager.Current.ApplicationTheme = vm.DarkMode ? ApplicationTheme.Dark : ApplicationTheme.Light; };
+        };
         StateChanged += (_, _) =>
         {
             if (WindowState == WindowState.Minimized) { ShowInTaskbar = false; TrayHelper.Show(this); }
