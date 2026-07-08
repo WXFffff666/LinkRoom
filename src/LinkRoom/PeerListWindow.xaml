@@ -1,0 +1,14 @@
+<Window x:Class="LinkRoom.PeerListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        Title="房间成员" Height="400" Width="500"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize">
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="👥 房间成员" FontSize="16" FontWeight="Bold" Foreground="#1D1D1F" Margin="0,0,0,8"/>
+        <ListBox Grid.Row="1" x:Name="PeerList" BorderBrush="#E5E5EA" Background="White"/>
+    </Grid>
+</Window>

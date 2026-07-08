@@ -26,11 +26,11 @@ public partial class SettingsWindow : Window
         {
             try
             {
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
                 var addrs = await Dns.GetHostAddressesAsync(host, cts.Token);
                 var ip = addrs.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
                 if (ip == null) { sb.AppendLine($"⏭ {host} — no IPv4"); continue; }
-                using var client = new StunClient5389UDP(new IPEndPoint(ip, port), new IPEndPoint(IPAddress.Any, 0)) { ReceiveTimeout = TimeSpan.FromSeconds(2) };
+                using var client = new StunClient5389UDP(new IPEndPoint(ip, port), new IPEndPoint(IPAddress.Any, 0)) { ReceiveTimeout = TimeSpan.FromSeconds(10) };
                 await client.QueryAsync(cts.Token);
                 var nat = Classify(client.State);
                 sb.AppendLine($"✅ {host} → {nat} ({client.State.PublicEndPoint})");

@@ -21,6 +21,7 @@ public partial class MainWindow : Window, IMainWindowView
     void PasswordBox_PasswordChanged(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) vm.Password = ((PasswordBox)s).Password; }
     void CreatedRoomId_DoubleClick(object s, System.Windows.Input.MouseButtonEventArgs e) { if (CreatedRoomId.Text.Length > 0) { Clipboard.SetText(CreatedRoomId.Text); MessageBox.Show("已复制"); } }
     void OpenSettings_Click(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) { var d = new SettingsWindow(vm); d.Owner = this; d.ShowDialog(); } }
+    void OpenPeerList_Click(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) { new PeerListWindow(vm.Peers) { Owner = this }.Show(); } }
     void OpenLog_Click(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) { var d = new LogWindow(Gui.MainViewModel.LogLines); d.Owner = this; d.ShowDialog(); } }
 
     public void ShowCreatedRoom(string id) => Dispatcher.Invoke(() => { CreatedRoomId.Text = id; CreatedRoomPanel.Visibility = Visibility.Visible; });
