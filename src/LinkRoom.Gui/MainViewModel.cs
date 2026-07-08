@@ -110,8 +110,8 @@ public partial class MainViewModel : ObservableObject
         {
             var snap = await DetectAsync(); _sm.DetectionComplete();
             var path = _ps.Evaluate(snap, adv);
-            _acfg = await _cfg.BuildAsync(room, snap, adv);
-            await _proc.StartAsync(_acfg.ConfigFilePath, "127.0.0.1:15888", "linkroom");
+            _acfg = await _cfg.BuildAsync(room, snap, adv, path);
+            await _proc.StartAsync(_acfg.ConfigFilePath, "127.0.0.1:15888", "linkroom", path.Flags);
             _sm.EasyTierReady(); StatusText = "connected";
             StatusDetail = $"NAT:{snap?.NatType} path:{path.Strategy} port:{adv.ListenerPort}";
             ConnState = "Connected"; _ss.Save(Save());
@@ -147,7 +147,7 @@ public partial class MainViewModel : ObservableObject
             {
                 await Task.Delay(3000, ct); var ps = await _cli.GetPeersAsync(ct); PeerCount = ps.Length;
                 Application.Current?.Dispatcher.InvokeAsync(() => { Peers.Clear(); foreach (var p in ps) Peers.Add($"{p.IPv4 ?? "?"} | NAT:{p.NatType ?? "?"} | {p.LatencyMs?.ToString("F0") ?? "?"}ms | {p.Cost ?? "?"}"); });
-                if (ps.Length > 0) { var p = ps[0]; NatType = p.NatType ?? ""; Latency = (p.LatencyMs?.ToString("F1") ?? "") + "ms"; LossRate = p.LossRate?.ToString("P1") ?? ""; ConnType = p.Cost ?? ""; if (_sm.CurrentState == ConnectionState.Connected) _sm.Monitoring(); }
+                if (ps.Length > 0) { var p = ps[0]; Latency = (p.LatencyMs?.ToString("F1") ?? "") + "ms"; LossRate = p.LossRate?.ToString("P1") ?? ""; ConnType = p.Cost ?? ""; if (_sm.CurrentState == ConnectionState.Connected) _sm.Monitoring(); }
             }
             catch (OperationCanceledException) { break; } catch { }
         }

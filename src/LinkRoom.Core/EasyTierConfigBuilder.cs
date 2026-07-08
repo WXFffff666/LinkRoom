@@ -26,6 +26,7 @@ public sealed class EasyTierConfigBuilder
         RoomOptions room,
         NetworkSnapshot? snapshot,
         AdvancedOptions advanced,
+        PathRecommendation? path = null,
         CancellationToken ct = default)
     {
         // Validate
@@ -35,7 +36,7 @@ public sealed class EasyTierConfigBuilder
             throw new ArgumentException("Password max 128 characters."); // empty = no password
 
         // Build TOML config file
-        var toml = BuildToml(room, snapshot, advanced);
+        var toml = BuildToml(room, snapshot, advanced, path);
 
         var tempDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -53,7 +54,7 @@ public sealed class EasyTierConfigBuilder
         return new EasyTierLaunchConfig(configPath, args);
     }
 
-    private static string BuildToml(RoomOptions room, NetworkSnapshot? snapshot, AdvancedOptions advanced)
+    private static string BuildToml(RoomOptions room, NetworkSnapshot? snapshot, AdvancedOptions advanced, PathRecommendation? path)
     {
         var sb = new StringBuilder();
         sb.AppendLine("# LinkRoom auto-generated EasyTier config");
@@ -74,7 +75,7 @@ public sealed class EasyTierConfigBuilder
         else
         {
             sb.AppendLine("dhcp = true");
-        }
+            }
 
         // Listener port
         sb.AppendLine($"# P2P listener port");

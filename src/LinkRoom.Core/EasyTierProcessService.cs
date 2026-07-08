@@ -48,7 +48,7 @@ public sealed class EasyTierProcessService : IDisposable
     /// Starts easytier-core.exe with the given config file.
     /// The config file contains the network secret — it is NEVER passed as a CLI argument.
     /// </summary>
-    public Task StartAsync(string configFilePath, string rpcPortal, string devName, CancellationToken ct = default)
+    public Task StartAsync(string configFilePath, string rpcPortal, string devName, IEnumerable<string>? extraArgs = null, CancellationToken ct = default)
     {
         if (IsRunning)
             throw new InvalidOperationException("EasyTier core is already running.");
@@ -63,6 +63,8 @@ public sealed class EasyTierProcessService : IDisposable
         var logFile = Path.Combine(_logDir, $"easytier-{DateTime.Now:yyyyMMdd-HHmmss}.log");
 
         var args = $"--config-file \"{configFilePath}\" --rpc-portal {rpcPortal} --dev-name \"{devName}\"";
+        if (extraArgs != null)
+            foreach (var a in extraArgs) args += $" {a}";
 
         _logger.LogInformation("Starting EasyTier core: {Path} --config-file {Config} --rpc-portal {Portal} --dev-name {Dev}",
             _easytierCorePath, configFilePath, rpcPortal, devName);
@@ -71,6 +73,7 @@ public sealed class EasyTierProcessService : IDisposable
         {
             FileName = _easytierCorePath,
             Arguments = args,
+            WorkingDirectory = Path.GetDirectoryName(_easytierCorePath) ?? "",
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
