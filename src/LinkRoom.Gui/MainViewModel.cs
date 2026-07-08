@@ -27,7 +27,8 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] string _statusText = "\u5c31\u7eea", _statusDetail = "\u8f93\u5165\u623f\u95f4\u53f7\u6216\u70b9\u51fb\u521b\u5efa\u623f\u95f4";
     [ObservableProperty] bool _isSharedNodeEnabled, _isUpnpDisabled = true;
     [ObservableProperty] string _sharedNodeUrls = "", _logLevel = "Info", _customStunServers = "", _staticVirtualIp = "";
-    [ObservableProperty] int _maxReconnectAttempts = 5, _listenerPort = 11010;
+    [ObservableProperty] int _maxReconnectAttempts = 5, _listenerPort = 11010, _mtu = 1380;
+    [ObservableProperty] bool _portableMode, _preferIPv6, _darkMode;
 
     public MainViewModel(EasyTierConfigBuilder cfg, EasyTierProcessService proc, EasyTierCliClient cli,
         ConnectionStateMachine sm, PathSelectionStrategy ps, DetectionCache dc,
@@ -47,6 +48,8 @@ public partial class MainViewModel : ObservableObject
         CustomStunServers = s.CustomStunServers ?? ""; StaticVirtualIp = s.StaticVirtualIp ?? "";
         MaxReconnectAttempts = s.MaxReconnectAttempts > 0 ? s.MaxReconnectAttempts : 5;
         ListenerPort = s.ListenerPort > 0 ? s.ListenerPort : 11010;
+        Mtu = s.Mtu is >= 576 and <= 1500 ? s.Mtu : 1380;
+        PreferIPv6 = s.PreferIPv6; PortableMode = s.PortableMode;
     }
 
     bool RoomValid => !string.IsNullOrWhiteSpace(RoomId) && RoomId.Length is >= 3 and <= 64 && !RoomId.Any(char.IsWhiteSpace);
@@ -60,6 +63,7 @@ public partial class MainViewModel : ObservableObject
         IsSharedNodeEnabled = IsSharedNodeEnabled, SharedNodeUrls = SharedNodeUrls, LogLevel = LogLevel,
         IsUpnpDisabled = IsUpnpDisabled, CustomStunServers = CustomStunServers,
         MaxReconnectAttempts = MaxReconnectAttempts, StaticVirtualIp = StaticVirtualIp, ListenerPort = ListenerPort,
+        Mtu = Mtu, PreferIPv6 = PreferIPv6, PortableMode = PortableMode,
     };
 
     void L(string m) { LogLines.Add($"[{DateTime.Now:HH:mm:ss}] {m}"); _log.LogInformation(m); }
@@ -117,6 +121,14 @@ public partial class MainViewModel : ObservableObject
         await _proc.StopAsync(); StatusText = "disconnected"; StatusDetail = "";
         ConnState = "Disconnected"; L("Disconnected");
         ConnectCommand.NotifyCanExecuteChanged(); DisconnectCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanDisconnect))]
+    async Task EndRoomAsync()
+    {
+        L("Ending room — notifying peers...");
+        await DisconnectAsync();
+        StatusText = "room ended"; StatusDetail = "房间已结束，所有连接已断开";
     }
 
     async Task MonitorAsync(CancellationToken ct)

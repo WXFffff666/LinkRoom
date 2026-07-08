@@ -51,9 +51,27 @@
 
             <!-- Static IP -->
             <TextBlock Text="虚拟 IP" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <TextBlock Text="留空使用 DHCP 自动分配。需要固定 IP 时才设置（如作为游戏主机）" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
+            <TextBlock Text="留空使用 DHCP 自动分配" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
             <TextBox Padding="8,6" Text="{Binding StaticVirtualIp}" BorderBrush="#E5E5EA"
-                     ToolTip="如 10.144.1.5" Margin="0,0,0,20"/>
+                     ToolTip="如 10.144.1.5" Margin="0,0,0,16"/>
+
+            <!-- MTU -->
+            <TextBlock Text="MTU" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
+            <TextBlock Text="虚拟网卡最大传输单元（默认 1380）" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
+            <TextBox Padding="8,6" Text="{Binding Mtu, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA"
+                     ToolTip="范围 576-1500" Margin="0,0,0,16"/>
+
+            <!-- IPv6 -->
+            <TextBlock Text="IPv6" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
+            <CheckBox Content="优先使用 IPv6" IsChecked="{Binding PreferIPv6}" Margin="0,0,0,16"/>
+
+            <!-- Portable Mode -->
+            <TextBlock Text="数据存储" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
+            <CheckBox Content="便携模式（数据存储在 exe 同目录）" IsChecked="{Binding PortableMode}" Margin="0,0,0,16"/>
+
+            <!-- Dark Theme -->
+            <TextBlock Text="外观" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
+            <CheckBox Content="暗色模式" IsChecked="{Binding DarkMode}" Margin="0,0,0,16"/>
 
             <!-- Game Port Scanner -->
             <TextBlock Text="🎮 游戏端口检测" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>

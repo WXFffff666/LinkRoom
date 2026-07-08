@@ -42,8 +42,10 @@
                         Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
             </Grid>
 
-            <Button Content="断开" Height="32" FontSize="11" Margin="0,8,0,0" Command="{Binding DisconnectCommand}"
+            <Button Content="断开" Height="32" FontSize="11" Margin="0,4,0,0" Command="{Binding DisconnectCommand}"
                     Foreground="#FF3B30" Background="Transparent" BorderThickness="0" Cursor="Hand"/>
+            <Button Content="结束房间" Height="32" FontSize="11" Margin="0,2,0,0" Command="{Binding EndRoomCommand}"
+                    Foreground="#8E8E93" Background="Transparent" BorderThickness="0" Cursor="Hand"/>
 
             <Border Background="#E8F5E9" CornerRadius="8" Padding="12" Margin="0,12,0,0"
                     x:Name="CreatedRoomPanel" Visibility="Collapsed">

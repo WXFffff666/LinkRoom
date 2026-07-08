@@ -99,4 +99,7 @@ public sealed record AppSettings
     public int MaxReconnectAttempts { get; set; } = 5;
     public string? StaticVirtualIp { get; set; }
     public int ListenerPort { get; set; } = 11010;
+    public int Mtu { get; set; } = 1380;
+    public bool PreferIPv6 { get; set; }
+    public bool PortableMode { get; set; }
 }

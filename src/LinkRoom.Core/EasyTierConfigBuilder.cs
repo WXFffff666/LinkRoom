@@ -79,6 +79,14 @@ public sealed class EasyTierConfigBuilder
         sb.AppendLine($"# P2P listener port");
         sb.AppendLine($"listeners = [\"tcp://0.0.0.0:{advanced.ListenerPort}\", \"udp://0.0.0.0:{advanced.ListenerPort}\"]");
 
+        // MTU
+        if (advanced.Mtu is >= 576 and <= 1500)
+            sb.AppendLine($"mtu = {advanced.Mtu}");
+
+        // IPv6 preference
+        if (advanced.PreferIPv6)
+            sb.AppendLine("enable_ipv6 = true");
+
         // NAT-specific flags from snapshot
         if (snapshot != null)
         {
@@ -166,6 +174,9 @@ public record AdvancedOptions
     public int MaxReconnectAttempts { get; init; } = 5;
     public string? StaticVirtualIp { get; init; }
     public int ListenerPort { get; init; } = 11010;
+    public int Mtu { get; init; } = 1380;
+    public bool PreferIPv6 { get; init; }
+    public bool PortableMode { get; init; }
 }
 
 /// <summary>
