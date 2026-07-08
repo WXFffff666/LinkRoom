@@ -72,8 +72,8 @@ public sealed class PathSelectionStrategy
                 break;
         }
 
-        // IPv6-only preference
-        if (snapshot.HasIPv6 && !snapshot.HasIPv4)
+        // IPv6 is enabled by default — provide feedback
+        if (snapshot is { HasIPv6: true, HasIPv4: false })
         {
             rec.Strategy += "+ipv6";
             rec.Flags.Add("--enable-ipv6");
@@ -92,11 +92,9 @@ public sealed class PathSelectionStrategy
             rec.Warnings.Add("UDP blocked. Using shared node relay.");
         }
 
-        // Don't force p2p-only when shared nodes are the only hope
-        if (rec.Strategy != "relay-via-shared-node")
-        {
-            rec.Flags.Add("--p2p-only");
-        }
+        // NO --p2p-only — EasyTier handles P2P preference via --lazy-p2p (keeps alive while waiting)
+        rec.Flags.Add("--lazy-p2p");
+        rec.Flags.Add("--no-tun"); // No virtual NIC needed for game P2P
 
         return rec;
     }
