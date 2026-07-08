@@ -19,7 +19,7 @@ public partial class App : Application
 
         var easytierCore = Path.Combine(runtimeDir, "easytier-core.exe");
         var easytierCli = Path.Combine(runtimeDir, "easytier-cli.exe");
-        var logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LinkRoom", "logs");
+        var logDir = Path.Combine(runtimeDir, "..", "logs");
         var logFile = Path.Combine(logDir, "linkroom.log");
 
         var logSink = new RollingLogSink(logFile, 500);

@@ -17,7 +17,11 @@ public sealed class StunNatDetector : INatDetector
     [
         ("stun.l.google.com", 19302),
         ("stun1.l.google.com", 19302),
+        ("stun2.l.google.com", 19302),
+        ("stun3.l.google.com", 19302),
+        ("stun4.l.google.com", 19302),
         ("stun.syncthing.net", 3478),
+        ("stun.nextcloud.com", 3478),
     ];
 
     public StunNatDetector(ILogger<StunNatDetector> logger)
@@ -83,7 +87,7 @@ public sealed class StunNatDetector : INatDetector
     private async Task<NatDetectionResult?> ProbeServerAsync(string host, int port, CancellationToken ct)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        cts.CancelAfter(TimeSpan.FromSeconds(10));
+        cts.CancelAfter(TimeSpan.FromSeconds(3));
 
         try
         {

@@ -87,7 +87,7 @@ public partial class MainViewModel : ObservableObject
     async Task CreateRoomAsync()
     {
         try {
-            var id = GenId(); var pw = _win?.GetCreatePassword() ?? ""; if (string.IsNullOrEmpty(pw)) pw = GenPw();
+            var id = GenId(); var pw = _win?.GetCreatePassword() ?? ""; if (string.IsNullOrEmpty(pw)) { pw = GenPw(); _win?.SetPasswordText(pw); }
             RoomId = id; Password = pw;
             L($"Creating room: {id}"); _win?.ShowCreatedRoom(id);
             await ConnectInternalAsync(new RoomOptions { RoomId = id, Password = pw });

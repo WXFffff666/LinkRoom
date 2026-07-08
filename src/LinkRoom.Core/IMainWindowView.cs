@@ -9,4 +9,5 @@ public interface IMainWindowView
     void AppendLog(string line);
     void ShowCreatedRoom(string roomId);
     string GetCreatePassword();
+    void SetPasswordText(string pw);
 }

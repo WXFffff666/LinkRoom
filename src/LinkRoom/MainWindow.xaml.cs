@@ -35,5 +35,18 @@ public partial class MainWindow : Window, IMainWindowView
 
     public void ShowCreatedRoom(string id) => Dispatcher.Invoke(() => { CreatedRoomId.Text = id; CreatedRoomPanel.Visibility = Visibility.Visible; });
     public string GetCreatePassword() => PasswordBox.Password;
+    public void SetPasswordText(string pw) => Dispatcher.Invoke(() => PasswordBox.Password = pw);
     public void AppendLog(string line) => Dispatcher.Invoke(() => Gui.MainViewModel.LogLines.Add(line));
+
+#pragma warning disable VSTHRD100
+    private async void UpdateLabel_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+#pragma warning restore VSTHRD100
+    {
+        UpdateLabel.Text = "检查中...";
+        try { using var hc = new System.Net.Http.HttpClient(); hc.DefaultRequestHeaders.UserAgent.ParseAdd("LinkRoom");
+            var json = await hc.GetStringAsync("https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest");
+            var tag = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("tag_name").GetString();
+            UpdateLabel.Text = tag == "v1.2.0" ? "已是最新" : $"🆕 {tag} 可用";
+        } catch { UpdateLabel.Text = "检查失败"; }
+    }
 }
