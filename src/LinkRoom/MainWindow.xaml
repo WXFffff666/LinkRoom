@@ -17,7 +17,9 @@
             <Button Content="⚙ 设置" FontSize="11" Foreground="#8E8E93" Background="Transparent"
                     BorderThickness="0" Click="OpenSettings_Click" Cursor="Hand" Margin="0,0,4,0"/>
             <Button Content="📋 日志" FontSize="11" Foreground="#8E8E93" Background="Transparent"
-                    BorderThickness="0" Click="OpenLog_Click" Cursor="Hand" DockPanel.Dock="Right"/>
+                    BorderThickness="0" Click="OpenLog_Click" Cursor="Hand" Margin="0,0,4,0"/>
+            <Button Content="🔄 更新" FontSize="11" Foreground="#007AFF" Background="Transparent"
+                    BorderThickness="0" Click="UpdateCheck_Click" Cursor="Hand" DockPanel.Dock="Right"/>
         </DockPanel>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -77,7 +79,7 @@
 
         <Border Grid.Row="2" Padding="6" Background="Transparent">
             <DockPanel>
-                <TextBlock x:Name="UpdateLabel" Text="v1.7.0" FontSize="10" Foreground="#C7C7CC" DockPanel.Dock="Right"
+                <TextBlock x:Name="UpdateLabel" Text="v1.11.0" FontSize="10" Foreground="#C7C7CC" DockPanel.Dock="Right"
                            Cursor="Hand" MouseDown="UpdateLabel_MouseDown" ToolTip="点击检查更新"/>
                 <TextBlock Text="{Binding StatusDetail}" FontSize="10" Foreground="#C7C7CC"/>
             </DockPanel>

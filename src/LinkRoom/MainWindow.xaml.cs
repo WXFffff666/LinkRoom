@@ -12,72 +12,29 @@ public partial class MainWindow : Window, IMainWindowView
     {
         InitializeComponent();
         DataContextChanged += (_, _) =>
-        {
-            if (DataContext is Gui.MainViewModel vm)
-                vm.PropertyChanged += (_, e) => { if (e.PropertyName == "DarkMode") ThemeManager.Current.ApplicationTheme = vm.DarkMode ? ApplicationTheme.Dark : ApplicationTheme.Light; };
-        };
-        StateChanged += (_, _) =>
-        {
-            if (WindowState == WindowState.Minimized) { ShowInTaskbar = false; TrayHelper.Show(this); }
-            else if (WindowState == WindowState.Normal) { ShowInTaskbar = true; TrayHelper.Hide(); }
-        };
+        { if (DataContext is Gui.MainViewModel vm) vm.PropertyChanged += (_, e) => { if (e.PropertyName == "DarkMode") ThemeManager.Current.ApplicationTheme = vm.DarkMode ? ApplicationTheme.Dark : ApplicationTheme.Light; }; };
+        StateChanged += (_, _) => { if (WindowState == WindowState.Minimized) { ShowInTaskbar = false; TrayHelper.Show(this); } else { ShowInTaskbar = true; TrayHelper.Hide(); } };
         Closing += (_, _) => TrayHelper.Hide();
-        SourceInitialized += (_, _) =>
-        {
-            var hwnd = new WindowInteropHelper(this).Handle;
-            HwndSource.FromHwnd(hwnd)?.AddHook(WndProc);
-        };
+        SourceInitialized += (_, _) => { var h = new WindowInteropHelper(this).Handle; HwndSource.FromHwnd(h)?.AddHook((IntPtr hw, int m, IntPtr w, IntPtr l, ref bool handled) => { if (m == 0x0203) { Show(); WindowState = WindowState.Normal; Activate(); handled = true; } return IntPtr.Zero; }); };
     }
 
-    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wp, IntPtr lp, ref bool handled)
-    {
-        if (msg == 0x0203) // WM_LBUTTONDBLCLK on tray icon
-        {
-            Show(); WindowState = WindowState.Normal; Activate();
-            handled = true;
-        }
-        return IntPtr.Zero;
-    }
-
-    private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is Gui.MainViewModel vm)
-            vm.Password = ((PasswordBox)sender).Password;
-    }
-
-    private void CreatedRoomId_DoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-    {
-        if (CreatedRoomId.Text.Length > 0)
-        {
-            Clipboard.SetText(CreatedRoomId.Text);
-            MessageBox.Show("房间号已复制到剪贴板！", "LinkRoom");
-        }
-    }
-
-    private void OpenSettings_Click(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is Gui.MainViewModel vm) { var d = new SettingsWindow(vm); d.Owner = this; d.ShowDialog(); }
-    }
-
-    private void OpenLog_Click(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is Gui.MainViewModel vm) { var d = new LogWindow(Gui.MainViewModel.LogLines); d.Owner = this; d.ShowDialog(); }
-    }
+    void PasswordBox_PasswordChanged(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) vm.Password = ((PasswordBox)s).Password; }
+    void CreatedRoomId_DoubleClick(object s, System.Windows.Input.MouseButtonEventArgs e) { if (CreatedRoomId.Text.Length > 0) { Clipboard.SetText(CreatedRoomId.Text); MessageBox.Show("已复制"); } }
+    void OpenSettings_Click(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) { var d = new SettingsWindow(vm); d.Owner = this; d.ShowDialog(); } }
+    void OpenLog_Click(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) { var d = new LogWindow(Gui.MainViewModel.LogLines); d.Owner = this; d.ShowDialog(); } }
 
     public void ShowCreatedRoom(string id) => Dispatcher.Invoke(() => { CreatedRoomId.Text = id; CreatedRoomPanel.Visibility = Visibility.Visible; });
     public string GetCreatePassword() => PasswordBox.Password;
     public void SetPasswordText(string pw) => Dispatcher.Invoke(() => PasswordBox.Password = pw);
     public void AppendLog(string line) => Dispatcher.Invoke(() => Gui.MainViewModel.LogLines.Add(line));
 
-#pragma warning disable VSTHRD100
-    private async void UpdateLabel_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-#pragma warning restore VSTHRD100
+    async void UpdateCheck_Click(object s, RoutedEventArgs e) => await CheckUpdateAsync();
+    async void UpdateLabel_MouseDown(object s, System.Windows.Input.MouseButtonEventArgs e) => await CheckUpdateAsync();
+
+    async Task CheckUpdateAsync()
     {
-        UpdateLabel.Text = "检查中...";
-        try { using var hc = new System.Net.Http.HttpClient(); hc.DefaultRequestHeaders.UserAgent.ParseAdd("LinkRoom");
-            var json = await hc.GetStringAsync("https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest");
-            var tag = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("tag_name").GetString();
-            UpdateLabel.Text = tag == "v1.2.0" ? "已是最新" : $"🆕 {tag} 可用";
-        } catch { UpdateLabel.Text = "检查失败"; }
+        UpdateLabel.Text = "checking...";
+        try { using var hc = new System.Net.Http.HttpClient(); hc.DefaultRequestHeaders.UserAgent.ParseAdd("LinkRoom"); var json = await hc.GetStringAsync("https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest"); var tag = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("tag_name").GetString(); UpdateLabel.Text = tag == "v1.11.0" ? "latest" : $"new {tag}"; }
+        catch { UpdateLabel.Text = "failed"; }
     }
 }

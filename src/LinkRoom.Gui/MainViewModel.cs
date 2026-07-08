@@ -150,7 +150,16 @@ public partial class MainViewModel : ObservableObject
             try
             {
                 await Task.Delay(3000, ct); var ps = await _cli.GetPeersAsync(ct); PeerCount = ps.Length;
-                Application.Current?.Dispatcher.InvokeAsync(() => { Peers.Clear(); foreach (var p in ps) Peers.Add($"{p.IPv4 ?? "?"} | NAT:{p.NatType ?? "?"} | {p.LatencyMs?.ToString("F0") ?? "?"}ms | {p.Cost ?? "?"}"); });
+                Application.Current?.Dispatcher.InvokeAsync(() =>
+                {
+                    Peers.Clear();
+                    for (int i = 0; i < ps.Length; i++)
+                    {
+                        var p = ps[i];
+                        var role = i == 0 ? "👑" : "👤";
+                        Peers.Add($"{role} {p.IPv4 ?? "?"} | {p.Hostname ?? "?"} | {p.NatType ?? "?"} | {p.LatencyMs?.ToString("F0") ?? "?"}ms");
+                    }
+                });
                 if (ps.Length > 0) { var p = ps[0]; Latency = (p.LatencyMs?.ToString("F1") ?? "") + "ms"; LossRate = p.LossRate?.ToString("P1") ?? ""; ConnType = p.Cost ?? ""; if (_sm.CurrentState == ConnectionState.Connected) _sm.Monitoring(); }
             }
             catch (OperationCanceledException) { break; } catch { }
