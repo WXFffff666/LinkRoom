@@ -89,7 +89,9 @@ public partial class MainViewModel : ObservableObject
         try {
             var id = GenId(); var pw = _win?.GetCreatePassword() ?? ""; if (string.IsNullOrEmpty(pw)) { pw = GenPw(); _win?.SetPasswordText(pw); }
             RoomId = id; Password = pw;
-            L($"Creating room: {id}"); _win?.ShowCreatedRoom(id);
+            L($"Creating room: {id} pass={pw}"); _win?.ShowCreatedRoom(id);
+            try { System.Windows.Clipboard.SetText($"LinkRoom 房间号: {id}\n密码: {pw}"); L("Room info copied to clipboard"); }
+            catch { /* clipboard may fail */ }
             await ConnectInternalAsync(new RoomOptions { RoomId = id, Password = pw });
         } catch (Exception ex) { L($"Create room error: {ex.Message}"); StatusText = "创建失败"; StatusDetail = ex.Message; }
     }

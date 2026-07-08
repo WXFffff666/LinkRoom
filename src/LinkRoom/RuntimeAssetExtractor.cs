@@ -26,7 +26,7 @@ public static class RuntimeAssetExtractor
     public static string EnsureExtracted(string version = "2.6.4")
     {
         _runtimeDir = Path.Combine(
-            AppContext.BaseDirectory,
+            Path.GetDirectoryName(Environment.ProcessPath!)!,
             "runtime", version);
 
         if (Directory.Exists(_runtimeDir) && AllPresent())
