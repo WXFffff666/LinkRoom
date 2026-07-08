@@ -23,7 +23,7 @@
   <!-- Embed EasyTier runtime assets as binary resources for auto-extraction -->
   <ItemGroup>
     <EmbeddedResource Include="..\LinkRoom.Core\Assets\easytier\**\*" Exclude="..\LinkRoom.Core\Assets\easytier\.git*">
-      <LogicalName>easytier\%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+      <LogicalName>easytier.%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 
