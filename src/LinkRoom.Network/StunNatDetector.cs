@@ -15,13 +15,21 @@ public sealed class StunNatDetector : INatDetector
 
     private static readonly (string Host, int Port)[] DefaultStunServers =
     [
+        // Google STUN (fast, reliable)
         ("stun.l.google.com", 19302),
         ("stun1.l.google.com", 19302),
         ("stun2.l.google.com", 19302),
         ("stun3.l.google.com", 19302),
         ("stun4.l.google.com", 19302),
+        // Syncthing
         ("stun.syncthing.net", 3478),
-        ("stun.nextcloud.com", 3478),
+        // NatTypeTester defaults (port 3478)
+        ("stun.hot-chilli.net", 3478),
+        ("stun.fitauto.ru", 3478),
+        ("stun.internetcalls.com", 3478),
+        ("stun.voip.aebc.com", 3478),
+        ("stun.voipbuster.com", 3478),
+        ("stun.voipstunt.com", 3478),
     ];
 
     public StunNatDetector(ILogger<StunNatDetector> logger)
