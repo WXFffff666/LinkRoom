@@ -128,8 +128,10 @@ public partial class MainViewModel : ObservableObject
     async Task DisconnectAsync()
     {
         await (_mon?.CancelAsync() ?? Task.CompletedTask); _sm.UserDisconnect();
-        await _proc.StopAsync(); StatusText = "disconnected"; StatusDetail = "";
-        ConnState = "Disconnected"; L("Disconnected");
+        await _proc.StopAsync();
+        EasyTierProcessService.KillOrphanProcesses(); // ensure all dead
+        StatusText = "disconnected"; StatusDetail = "";
+        ConnState = "Disconnected"; L("Disconnected — process killed");
         ConnectCommand.NotifyCanExecuteChanged(); DisconnectCommand.NotifyCanExecuteChanged();
     }
 

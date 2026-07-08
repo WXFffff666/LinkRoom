@@ -162,7 +162,7 @@ public sealed class EasyTierProcessService : IDisposable
     }
 
     /// <summary>Kills any leftover easytier-core processes from previous runs.</summary>
-    static void KillOrphanProcesses()
+    public static void KillOrphanProcesses()
     {
         try
         {
