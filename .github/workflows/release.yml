@@ -1,0 +1,121 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag (e.g. v1.15.0)"
+        required: true
+        default: "v1.15.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Resolve version tag
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $tag = "${{ github.ref_name }}"
+          } else {
+            $tag = "${{ github.event.inputs.version }}"
+          }
+          if ($tag -notmatch '^v') { $tag = "v$tag" }
+          $semver = $tag.TrimStart('v')
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "semver=$semver" >> $env:GITHUB_OUTPUT
+          Write-Host "Release tag: $tag (semver: $semver)"
+
+      - name: Sync csproj version
+        shell: pwsh
+        run: |
+          $csproj = "src/LinkRoom/LinkRoom.csproj"
+          $content = Get-Content $csproj -Raw
+          $content = $content -replace '<Version>[\d\.]+</Version>', "<Version>${{ steps.version.outputs.semver }}</Version>"
+          Set-Content $csproj $content -NoNewline
+
+      - name: Fetch EasyTier runtime
+        shell: pwsh
+        run: ./tools/fetch-easytier.ps1
+
+      - name: Restore & Build
+        run: |
+          dotnet restore LinkRoom.sln
+          dotnet build LinkRoom.sln -c Release --no-restore
+
+      - name: Publish single-file exe
+        run: dotnet publish src/LinkRoom/LinkRoom.csproj -c Release -o publish --no-restore
+
+      - name: Package release artifact
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          $name = "LinkRoom-$tag-win-x64.exe"
+          Copy-Item publish/LinkRoom.exe "publish/$name"
+          $size = [math]::Round((Get-Item "publish/$name").Length / 1MB, 2)
+          "artifact=$name" >> $env:GITHUB_OUTPUT
+          "size_mb=$size" >> $env:GITHUB_OUTPUT
+          Write-Host "Packaged $name ($size MB)"
+        id: package
+
+      - name: Generate release notes body
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          $size = "${{ steps.package.outputs.size_mb }}"
+          @"
+          ## LinkRoom $tag
+
+          Windows x64 单文件便携版 P2P 游戏联机工具。
+
+          ### 下载
+
+          | 文件 | 说明 |
+          |------|------|
+          | ``LinkRoom-$tag-win-x64.exe`` | 单文件 exe（约 ${size} MB），双击运行 |
+
+          ### 使用
+
+          1. 下载 ``LinkRoom-$tag-win-x64.exe``
+          2. 双击运行（LAN 模式需管理员权限）
+          3. 创建房间或输入联机码加入
+
+          ### 数据目录
+
+          运行后在 exe 同目录生成 ``LinkRoomData/`` 文件夹。
+
+          ### 系统要求
+
+          - Windows 10 / 11 x64
+          - 首次 LAN 模式需管理员权限（Wintun 虚拟网卡）
+          "@ | Out-File -FilePath RELEASE_BODY.md -Encoding utf8
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: LinkRoom ${{ steps.version.outputs.tag }}
+          body_path: RELEASE_BODY.md
+          files: |
+            publish/LinkRoom.exe
+            publish/LinkRoom-${{ steps.version.outputs.tag }}-win-x64.exe
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.tag, '-') }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

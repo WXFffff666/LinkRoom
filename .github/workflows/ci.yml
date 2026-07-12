@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Fetch EasyTier runtime
+        shell: pwsh
+        run: ./tools/fetch-easytier.ps1
+
+      - name: Restore
+        run: dotnet restore LinkRoom.sln
+
+      - name: Build
+        run: dotnet build LinkRoom.sln -c Release --no-restore
+
+      - name: Publish (verify single-file output)
+        run: dotnet publish src/LinkRoom/LinkRoom.csproj -c Release -o publish --no-restore
+
+      - name: Verify artifact
+        shell: pwsh
+        run: |
+          $exe = Get-Item publish/LinkRoom.exe
+          Write-Host "LinkRoom.exe size: $([math]::Round($exe.Length / 1MB, 2)) MB"
+          if ($exe.Length -lt 10MB) { throw "Published exe too small — build may have failed" }

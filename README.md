@@ -33,6 +33,16 @@ LinkRoomData/
 dotnet publish src\LinkRoom\LinkRoom.csproj -c Release
 ```
 
+## 自动发布
+
+推送 `v*` 标签即可触发 GitHub Actions 自动构建并发布 Release：
+
+```bash
+git tag v1.15.0 && git push origin v1.15.0
+```
+
+详见 [docs/RELEASE.md](docs/RELEASE.md)
+
 ## 引用项目
 
 | 项目 | 用途 |
