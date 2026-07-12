@@ -44,10 +44,16 @@ public sealed class PathSelectionStrategy
                     break;
             }
 
-            if (snapshot is { HasIPv6: true, HasIPv4: false })
+            if (snapshot is { HasIPv6: true, HasIPv4: false } || advanced.Ipv6Only)
             {
                 rec.Strategy += "+ipv6";
                 rec.TomlFlags.Add("enable_ipv6 = true");
+            }
+
+            if (advanced.Ipv6Only)
+            {
+                rec.Strategy += "+ipv6-only";
+                rec.TomlFlags.Add("disable_ipv4 = true");
             }
         }
 

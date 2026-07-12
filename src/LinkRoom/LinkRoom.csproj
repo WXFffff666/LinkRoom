@@ -7,7 +7,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <RootNamespace>LinkRoom</RootNamespace>
     <AssemblyName>LinkRoom</AssemblyName>
-    <Version>1.15.0</Version>
+    <Version>1.16.0</Version>
     <NoWarn>VSTHRD100;VSTHRD200</NoWarn>
     <!-- Single-file publish config (inline to ensure WPF SDK applies it) -->
     <PublishSingleFile>true</PublishSingleFile>
@@ -18,7 +18,7 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
-    <PublishReadyToRun>false</PublishReadyToRun>
+    <PublishReadyToRun>true</PublishReadyToRun>
   </PropertyGroup>
 
   <!-- Embed EasyTier runtime assets as binary resources for auto-extraction -->
@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />

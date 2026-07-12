@@ -10,6 +10,10 @@
         MinHeight="480" MinWidth="360"
         WindowStartupLocation="CenterScreen">
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
 
@@ -68,6 +72,12 @@
                     Command="{Binding DisconnectCommand}"
                     Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
 
+            <!-- Connection progress -->
+            <StackPanel Margin="0,8,0,0" Visibility="{Binding IsProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <ProgressBar Height="6" Minimum="0" Maximum="100" Value="{Binding ProgressValue}"/>
+                <TextBlock Text="{Binding ProgressText}" FontSize="10" Foreground="#8E8E93" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+
             <Border Background="#E8F5E9" CornerRadius="8" Padding="12" Margin="0,12,0,0"
                     x:Name="CreatedRoomPanel" Visibility="Collapsed">
                 <StackPanel>
@@ -78,6 +88,10 @@
                     <TextBox x:Name="LinkCodeText" FontSize="10" Foreground="#388E3C"
                              IsReadOnly="True" BorderThickness="0" Background="Transparent" TextWrapping="Wrap"
                              MouseDoubleClick="LinkCode_DoubleClick" ToolTip="双击复制联机链接"/>
+                    <StackPanel x:Name="QrCodePanel" Orientation="Horizontal" Margin="0,8,0,0" Visibility="Collapsed">
+                        <Image x:Name="QrCodeImage" Width="96" Height="96" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding ShortLinkText}" FontSize="9" Foreground="#388E3C" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </StackPanel>
                     <Button Content="复制联机链接" Command="{Binding CopyLinkCodeCommand}" Margin="0,6,0,0" Height="28"/>
                 </StackPanel>
             </Border>
@@ -94,7 +108,14 @@
                         <Run Text="虚拟 IPv4: "/><Run Text="{Binding VirtualIpv4, Mode=OneWay}"/>
                         <Run Text=" | IPv6: "/><Run Text="{Binding VirtualIpv6, Mode=OneWay}"/>
                     </TextBlock>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <Button Content="复制虚拟 IP" Height="24" FontSize="10" Padding="8,0" Click="CopyVirtualIp_Click" Margin="0,0,6,0"/>
+                        <Button Content="连接测速" Height="24" FontSize="10" Padding="8,0"
+                                Command="{Binding SpeedTestCommand}"/>
+                    </StackPanel>
                     <TextBlock Text="{Binding PortForwardHint}" FontSize="10" Foreground="#007AFF" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding PathDiagram}" FontSize="9" Foreground="#6E6E73" FontFamily="Consolas"
+                               Margin="0,6,0,0" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
 

@@ -20,6 +20,8 @@ public partial class MainWindow : Window, IMainWindowView
                 {
                     if (e.PropertyName == "DarkMode")
                         ThemeManager.Current.ApplicationTheme = vm.DarkMode ? ApplicationTheme.Dark : ApplicationTheme.Light;
+                    if (e.PropertyName == "UpdateStatus" && !string.IsNullOrEmpty(vm.UpdateStatus))
+                        SetUpdateLabel(vm.UpdateStatus);
                 };
             }
         };
@@ -55,6 +57,11 @@ public partial class MainWindow : Window, IMainWindowView
         if (LinkCodeText.Text.Length > 0) { Clipboard.SetText(LinkCodeText.Text); MessageBox.Show("已复制联机链接"); }
     }
 
+    void CopyVirtualIp_Click(object s, RoutedEventArgs e)
+    {
+        if (DataContext is Gui.MainViewModel vm) vm.CopyVirtualIpCommand.Execute(null);
+    }
+
     void OpenSettings_Click(object s, RoutedEventArgs e)
     {
         if (DataContext is Gui.MainViewModel vm) { var d = new SettingsWindow(vm) { Owner = this }; d.ShowDialog(); }
@@ -62,7 +69,7 @@ public partial class MainWindow : Window, IMainWindowView
 
     void OpenPeerList_Click(object s, RoutedEventArgs e)
     {
-        if (DataContext is Gui.MainViewModel vm) new PeerListWindow(vm.Peers) { Owner = this }.Show();
+        if (DataContext is Gui.MainViewModel vm) new PeerListWindow(vm) { Owner = this }.Show();
     }
 
     void OpenLog_Click(object s, RoutedEventArgs e)
@@ -76,31 +83,30 @@ public partial class MainWindow : Window, IMainWindowView
             vm.RoomId = room;
     }
 
-    public void ShowCreatedRoom(string id, string? linkCode = null) => Dispatcher.Invoke(() =>
+    public void ShowCreatedRoom(string id, string? linkCode = null, string? qrPayload = null) => Dispatcher.Invoke(() =>
     {
         CreatedRoomId.Text = id;
         LinkCodeText.Text = linkCode ?? "";
         CreatedRoomPanel.Visibility = Visibility.Visible;
+        var payload = qrPayload ?? linkCode ?? id;
+        QrCodeImage.Source = QrCodeHelper.Generate(payload);
+        QrCodePanel.Visibility = QrCodeImage.Source != null ? Visibility.Visible : Visibility.Collapsed;
     });
 
     public string GetCreatePassword() => PasswordBox.Password;
     public void SetPasswordText(string pw) => Dispatcher.Invoke(() => PasswordBox.Password = pw);
     public void AppendLog(string line) => Dispatcher.Invoke(() => Gui.MainViewModel.LogLines.Add(line));
+    public void SetUpdateLabel(string text) => Dispatcher.Invoke(() => UpdateLabel.Text = text);
 
-    async void UpdateCheck_Click(object s, RoutedEventArgs e) => await CheckUpdateAsync();
-    async void UpdateLabel_MouseDown(object s, System.Windows.Input.MouseButtonEventArgs e) => await CheckUpdateAsync();
-
-    async Task CheckUpdateAsync()
+    async void UpdateCheck_Click(object s, RoutedEventArgs e)
     {
-        UpdateLabel.Text = "checking...";
-        try
-        {
-            using var hc = new System.Net.Http.HttpClient();
-            hc.DefaultRequestHeaders.UserAgent.ParseAdd("LinkRoom");
-            var json = await hc.GetStringAsync("https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest");
-            var tag = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("tag_name").GetString();
-            UpdateLabel.Text = tag == "v" + App.Version ? "latest" : $"new {tag}";
-        }
-        catch { UpdateLabel.Text = "failed"; }
+        if (DataContext is Gui.MainViewModel vm)
+            await vm.CheckUpdateManualCommand.ExecuteAsync(null);
+    }
+
+    async void UpdateLabel_MouseDown(object s, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (DataContext is Gui.MainViewModel vm)
+            await vm.CheckUpdateManualCommand.ExecuteAsync(null);
     }
 }

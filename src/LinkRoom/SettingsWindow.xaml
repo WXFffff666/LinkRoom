@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
         ui:WindowHelper.UseModernWindowStyle="True"
-        Title="设置" Height="620" Width="420"
+        Title="设置" Height="720" Width="420"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -12,6 +12,7 @@
 
             <TextBlock Text="连接模式" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
             <CheckBox Content="LAN 模式（虚拟网卡 + UDP 广播，MC 等自动发现）" IsChecked="{Binding UseLanMode}" Margin="0,0,0,4"/>
+            <CheckBox Content="禁用 UPnP 端口映射（对称型 NAT 可关闭此项并启用 UPnP）" IsChecked="{Binding IsUpnpDisabled}" Margin="0,0,0,4"/>
             <TextBlock Text="LAN 模式需管理员权限；轻量模式无需虚拟网卡" FontSize="10" Foreground="#8E8E93" Margin="0,0,0,12"/>
 
             <TextBlock Text="监听端口" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
@@ -25,7 +26,8 @@
             <TextBlock Text="STUN 服务器" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
             <TextBox Padding="8,6" Text="{Binding CustomStunServers}" BorderBrush="#E5E5EA"
                      ToolTip="host:port 逗号分隔，留空用默认" Margin="0,0,0,4"/>
-            <Button Content="🔄 更新远程 STUN 列表" Height="32" Click="RefreshStun_Click" Margin="0,0,0,12"/>
+            <Button Content="🔄 更新远程 STUN 列表" Height="32" Click="RefreshStun_Click" Margin="0,0,0,4"/>
+            <Button Content="🔄 刷新网络检测缓存" Height="32" Click="RefreshNetwork_Click" Margin="0,0,0,12"/>
 
             <TextBlock Text="自动重连" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
             <TextBox Padding="8,6" Text="{Binding MaxReconnectAttempts, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA" Margin="0,0,0,12"/>
@@ -33,7 +35,22 @@
             <TextBlock Text="虚拟 IP / MTU / IPv6" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
             <TextBox Padding="8,6" Text="{Binding StaticVirtualIp}" BorderBrush="#E5E5EA" ToolTip="留空 DHCP" Margin="0,0,0,4"/>
             <TextBox Padding="8,6" Text="{Binding Mtu, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA" Margin="0,0,0,4"/>
-            <CheckBox Content="优先 IPv6" IsChecked="{Binding PreferIPv6}" Margin="0,0,0,12"/>
+            <CheckBox Content="优先 IPv6" IsChecked="{Binding PreferIPv6}" Margin="0,0,0,4"/>
+            <CheckBox Content="仅 IPv6 模式" IsChecked="{Binding Ipv6Only}" Margin="0,0,0,4"/>
+            <CheckBox Content="启用 SOCKS5 代理" IsChecked="{Binding EnableSocks5}" Margin="0,0,0,4"/>
+            <TextBox Padding="8,6" Text="{Binding Socks5Port, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding EnableSocks5}"
+                     BorderBrush="#E5E5EA" ToolTip="SOCKS5 端口" Margin="0,0,0,4"/>
+            <CheckBox Content="锁定房间（仅房主可加入新成员）" IsChecked="{Binding RoomLocked}" Margin="0,0,0,12"/>
+
+            <TextBlock Text="更新" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <CheckBox Content="启动时自动检查 GitHub 更新" IsChecked="{Binding AutoCheckUpdate}" Margin="0,0,0,4"/>
+            <Button Content="🔄 立即检查更新" Height="32" Click="CheckUpdate_Click" Margin="0,0,0,12"/>
+
+            <TextBlock Text="配置管理" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                <Button Content="📤 导出配置" Height="32" Width="110" Click="ExportConfig_Click" Margin="0,0,8,0"/>
+                <Button Content="📥 导入配置" Height="32" Width="110" Click="ImportConfig_Click"/>
+            </StackPanel>
 
             <TextBlock Text="数据存储" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
             <CheckBox Content="便携模式（LinkRoomData/ 在 exe 同目录）" IsChecked="{Binding PortableMode}" Margin="0,0,0,4"/>
@@ -52,6 +69,10 @@
                 <Button Content="🔍 自检" Height="36" Width="100" Click="RunSelfCheck_Click" Margin="0,0,8,0"/>
                 <Button Content="📦 导出诊断包" Height="36" Width="120" Click="ExportDiag_Click" Margin="0,0,8,0"/>
                 <Button Content="🌐 Web 面板" Height="36" Width="100" Click="OpenWebPanel_Click"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <Button Content="🎮 扫描 MC Mod" Height="32" Width="120" Click="ScanMods_Click" Margin="0,0,8,0"/>
+                <Button Content="📦 EasyTier 版本" Height="32" Width="120" Click="CheckEtVersion_Click"/>
             </StackPanel>
             <TextBlock x:Name="SelfCheckResult" FontSize="11" Foreground="#6E6E73" TextWrapping="Wrap" Margin="0,0,0,12"/>
 

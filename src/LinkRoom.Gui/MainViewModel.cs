@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
@@ -28,6 +29,8 @@ public partial class MainViewModel : ObservableObject
     readonly DiagnosticsService _diag;
     readonly NatProbeService _natProbe;
     readonly StunServerProvider _stunProvider;
+    readonly UpdateService _update;
+    readonly ProcessGuardian _guardian;
     readonly ILogger<MainViewModel> _log;
 
     CancellationTokenSource? _mon;
@@ -57,11 +60,13 @@ public partial class MainViewModel : ObservableObject
         NetworkInfoService ns, SettingsService ss,
         PeerPingService ping, WebPanelService web, DiagnosticsService diag,
         NatProbeService natProbe, StunServerProvider stunProvider,
+        UpdateService update, ProcessGuardian guardian,
         ILogger<MainViewModel> log, ILogger<AutoReconnectService> reconnectLog)
     {
         _cfg = cfg; _proc = proc; _cli = cli; _sm = sm; _ps = ps; _dc = dc;
         _ns = ns; _ss = ss; _ping = ping; _web = web;
-        _diag = diag; _natProbe = natProbe; _stunProvider = stunProvider; _log = log;
+        _diag = diag; _natProbe = natProbe; _stunProvider = stunProvider;
+        _update = update; _guardian = guardian; _log = log;
 
         _reconnect = new AutoReconnectService(sm, ReconnectAsync, reconnectLog);
 
@@ -110,6 +115,14 @@ public partial class MainViewModel : ObservableObject
         IsHostMode = s.IsHostMode;
         AutoStart = s.AutoStart;
         GamePortHint = s.GamePortHint;
+        IsUpnpDisabled = s.IsUpnpDisabled;
+        AutoCheckUpdate = s.AutoCheckUpdate;
+        SkippedUpdateVersion = s.SkippedUpdateVersion;
+        FirstRunCompleted = s.FirstRunCompleted;
+        Ipv6Only = s.Ipv6Only;
+        EnableSocks5 = s.EnableSocks5;
+        Socks5Port = s.Socks5Port > 0 ? s.Socks5Port : 1080;
+        RoomLocked = s.RoomLocked;
         _reconnect.MaxAttempts = MaxReconnectAttempts;
         _ns.SetCustomStunServers(CustomStunServers);
 
@@ -131,7 +144,7 @@ public partial class MainViewModel : ObservableObject
         IsSharedNodeEnabled = IsSharedNodeEnabled,
         SharedNodeUrls = SharedNodeUrls,
         LogLevel = LogLevel,
-        IsUpnpDisabled = true,
+        IsUpnpDisabled = IsUpnpDisabled,
         CustomStunServers = CustomStunServers,
         MaxReconnectAttempts = MaxReconnectAttempts,
         StaticVirtualIp = StaticVirtualIp,
@@ -142,12 +155,17 @@ public partial class MainViewModel : ObservableObject
         UseLanMode = UseLanMode,
         IsHostMode = IsHostMode,
         GamePortHint = GamePortHint,
+        Ipv6Only = Ipv6Only,
+        EnableSocks5 = EnableSocks5,
+        Socks5Port = Socks5Port,
+        RoomLocked = RoomLocked,
     };
 
     void L(string m)
     {
         var line = SettingsService.SanitizeLog($"[{DateTime.Now:HH:mm:ss}] {m}");
         LogLines.Add(line);
+        while (LogLines.Count > 300) LogLines.RemoveAt(0);
         _log.LogInformation(m);
     }
 
@@ -188,10 +206,35 @@ public partial class MainViewModel : ObservableObject
         IsHostMode = IsHostMode,
         AutoStart = AutoStart,
         GamePortHint = GamePortHint,
+        IsUpnpDisabled = IsUpnpDisabled,
+        AutoCheckUpdate = AutoCheckUpdate,
+        SkippedUpdateVersion = SkippedUpdateVersion,
+        FirstRunCompleted = FirstRunCompleted,
+        Ipv6Only = Ipv6Only,
+        EnableSocks5 = EnableSocks5,
+        Socks5Port = Socks5Port,
+        RoomLocked = RoomLocked,
     };
 
     async Task ConnectInternalAsync(RoomOptions room, bool isReconnect = false)
     {
+        var (valid, err) = ConfigValidator.ValidateAll(room.RoomId, ListenerPort, Mtu, room.Password);
+        if (!valid)
+        {
+            StatusText = "参数无效";
+            StatusDetail = err ?? "";
+            L(err ?? "参数无效");
+            return;
+        }
+
+        if (RoomLocked && !IsHostMode)
+        {
+            StatusText = "房间已锁定";
+            StatusDetail = "房主已锁定房间，无法加入";
+            L("房间已锁定，加入被拒绝");
+            return;
+        }
+
         if (UseLanMode && !AdminHelper.IsAdministrator())
         {
             StatusText = "需要管理员权限";
@@ -208,6 +251,9 @@ public partial class MainViewModel : ObservableObject
         if (!isReconnect) _sm.UserConnect();
         StatusText = isReconnect ? "重连中..." : "连接中...";
         StatusDetail = "正在检测 NAT 类型...";
+        IsProgressVisible = true;
+        ProgressValue = 10;
+        ProgressText = "检测网络...";
 
         try
         {
@@ -217,6 +263,8 @@ public partial class MainViewModel : ObservableObject
                 EasyTierProcessService.KillOrphanProcesses();
             }
 
+            ProgressValue = 30;
+            ProgressText = "NAT 检测中...";
             var snap = await _dc.GetAsync();
             NatType = snap.NatType.ToString();
             Ipv4 = snap.PublicIPv4 ?? "";
@@ -224,14 +272,21 @@ public partial class MainViewModel : ObservableObject
 
             if (!isReconnect) _sm.DetectionComplete();
 
+            ProgressValue = 50;
+            ProgressText = "选择连接路径...";
             var path = _ps.Evaluate(snap, adv);
             foreach (var w in path.Warnings) L($"⚠ {w}");
+            PathDiagram = PathVisualizationService.Build(NatType, path.Strategy, ConnType, IsRelayMode, !IsUpnpDisabled);
 
+            ProgressValue = 70;
+            ProgressText = "启动 EasyTier...";
             _acfg = await _cfg.BuildAsync(room, snap, adv, path);
             await _proc.StartAsync(_acfg.ConfigFilePath, "127.0.0.1:15888", "linkroom", _acfg.CliFlags);
 
             if (isReconnect) _sm.ReconnectSucceeded();
             else _sm.EasyTierReady();
+            ProgressValue = 100;
+            ProgressText = "已连接";
             StatusText = "已连接";
             StatusDetail = $"NAT:{snap.NatType} | {path.Strategy} | 端口:{adv.ListenerPort}";
 
@@ -239,6 +294,12 @@ public partial class MainViewModel : ObservableObject
             _ss.AddRoomHistory(room.RoomId);
             if (!RoomHistory.Contains(room.RoomId)) RoomHistory.Insert(0, room.RoomId);
             while (RoomHistory.Count > 5) RoomHistory.RemoveAt(RoomHistory.Count - 1);
+
+            _guardian.Start(async () =>
+            {
+                L("EasyTier 进程异常，尝试恢复...");
+                if (_lastRoom != null) await ConnectInternalAsync(_lastRoom, isReconnect: true);
+            });
 
             await (_mon?.CancelAsync() ?? Task.CompletedTask);
             _mon = new CancellationTokenSource();
@@ -255,6 +316,7 @@ public partial class MainViewModel : ObservableObject
         }
         finally
         {
+            IsProgressVisible = false;
             _acfg?.Cleanup();
             ConnectCommand.NotifyCanExecuteChanged();
             DisconnectCommand.NotifyCanExecuteChanged();
@@ -273,7 +335,8 @@ public partial class MainViewModel : ObservableObject
             Password = pw;
             L($"创建房间: {id}");
             var link = LinkCodeService.Encode(id, pw, GamePortHint);
-            _win?.ShowCreatedRoom(id, link);
+            ShortLinkText = ShortLinkService.FormatShare(id, pw, GamePortHint);
+            _win?.ShowCreatedRoom(id, link, link);
 
             try
             {
@@ -317,6 +380,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanDisconnect))]
     async Task DisconnectAsync()
     {
+        _guardian.Stop();
         await (_mon?.CancelAsync() ?? Task.CompletedTask);
         _sm.UserDisconnect();
         await _proc.StopAsync();
@@ -324,6 +388,7 @@ public partial class MainViewModel : ObservableObject
         IsRelayMode = false;
         ConnectionQuality = "";
         PortForwardHint = "";
+        PathDiagram = "";
         StatusText = "已断开";
         StatusDetail = "";
         ConnState = "Disconnected";
@@ -417,7 +482,13 @@ public partial class MainViewModel : ObservableObject
                     }
                     foreach (var old in prevIds)
                         if (!curIds.Contains(old) && prevIds.Count > 0)
-                            LogLines.Add(SettingsService.SanitizeLog($"[{DateTime.Now:HH:mm:ss}] 📢 {old} 已断开"));
+                        {
+                            L($"📢 {old} 已离开");
+                            NotificationService.Show("LinkRoom", $"{old} 已离开房间");
+                        }
+                    foreach (var id in curIds)
+                        if (!prevIds.Contains(id) && prevIds.Count > 0 && id != "?")
+                            NotificationService.Show("LinkRoom", $"{id} 加入了房间");
                     prevIds.Clear();
                     foreach (var c in curIds) prevIds.Add(c);
                 });
@@ -428,11 +499,18 @@ public partial class MainViewModel : ObservableObject
                     Latency = (p.LatencyMs?.ToString("F1") ?? "-") + "ms";
                     LossRate = p.LossRate?.ToString("P1") ?? "-";
                     ConnType = p.Cost ?? "";
-                    IsRelayMode = p.Cost?.Contains("relay", StringComparison.OrdinalIgnoreCase) ?? false;
-                    ConnectionQuality = IsRelayMode
+                    var isRelay = p.Cost?.Contains("relay", StringComparison.OrdinalIgnoreCase) ?? false;
+                    IsRelayMode = isRelay;
+                    ConnectionQuality = isRelay
                         ? $"⚠ 中继 | {Latency} | 丢包 {LossRate}"
                         : $"✅ P2P | {Latency} | 丢包 {LossRate}";
-                    if (IsRelayMode) StatusDetail = "中继模式 — 建议 UPnP 或共享节点";
+                    PathDiagram = PathVisualizationService.Build(NatType, ConnType, p.Cost ?? "", isRelay, !IsUpnpDisabled);
+                    if (isRelay)
+                    {
+                        StatusDetail = "中继模式 — 建议 UPnP 或共享节点";
+                        if (!_prevRelayMode) NotificationService.Show("LinkRoom", "已切换到中继模式");
+                    }
+                    _prevRelayMode = isRelay;
                     if (_sm.CurrentState == ConnectionState.Connected) _sm.Monitoring();
                 }
             }
@@ -482,9 +560,9 @@ public partial class MainViewModel : ObservableObject
         ConnectCommand.NotifyCanExecuteChanged();
         PasswordStrengthHint = PasswordStrength.Hint(PasswordStrength.Evaluate(value));
     }
-    partial void OnPortableModeChanged(bool value) => AppPaths.Configure(value);
+    partial void OnPortableModeChanged(bool value) { AppPaths.Configure(value); SaveSettingsNow(); }
     partial void OnAutoStartChanged(bool value) => AutoStartService.SetEnabled(value);
-    partial void OnMaxReconnectAttemptsChanged(int value) => _reconnect.MaxAttempts = value > 0 ? value : 5;
+    partial void OnMaxReconnectAttemptsChanged(int value) { _reconnect.MaxAttempts = value > 0 ? value : 5; SaveSettingsNow(); }
 }
 
 public static class SelfCheckRunner

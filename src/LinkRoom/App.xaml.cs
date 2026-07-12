@@ -1,6 +1,4 @@
 using System.IO;
-using System.Net.Http;
-using System.Reflection;
 using System.Windows;
 using LinkRoom.Core;
 using LinkRoom.Gui;
@@ -12,7 +10,7 @@ namespace LinkRoom;
 public partial class App : Application
 {
     public static string Version { get; } =
-        Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.15.0";
+        System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.16.0";
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -27,6 +25,7 @@ public partial class App : Application
         var saved = settingsService.Load();
         AppPaths.Configure(saved.PortableMode);
         AppPaths.EnsureDataDirectories();
+        StunServerProvider.CachePathOverride = AppPaths.StunCachePath;
         PluginRegistry.LoadFromDirectory(AppPaths.PluginsDir);
 
         string runtimeDir;
@@ -65,6 +64,9 @@ public partial class App : Application
             AppPaths.LogDir,
             loggerFactory.CreateLogger<EasyTierProcessService>());
 
+        var guardian = new ProcessGuardian(processService, loggerFactory.CreateLogger<ProcessGuardian>());
+        var updateService = new UpdateService(loggerFactory.CreateLogger<UpdateService>());
+
         var cliClient = new EasyTierCliClient(
             Path.Combine(runtimeDir, "easytier-cli.exe"),
             "127.0.0.1:15888",
@@ -84,12 +86,13 @@ public partial class App : Application
             new DiagnosticsService(settingsService),
             natProbe,
             stunProvider,
+            updateService,
+            guardian,
             loggerFactory.CreateLogger<MainViewModel>(),
             loggerFactory.CreateLogger<AutoReconnectService>());
 
         vm.RestoreSettings(saved);
         _ = stunProvider.RefreshRemoteListAsync();
-        _ = CheckForUpdatesAsync();
 
         if (cli?.Headless == true && (cli.Create || cli.Join))
         {
@@ -108,32 +111,16 @@ public partial class App : Application
         var window = new MainWindow { DataContext = vm };
         vm.SetWindow(window);
         window.Show();
-        if (cli?.Minimized == true) window.WindowState = WindowState.Minimized;
-    }
 
-    static async Task CheckForUpdatesAsync()
-    {
-        try
+        if (!vm.FirstRunCompleted)
         {
-            using var hc = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
-            hc.DefaultRequestHeaders.UserAgent.ParseAdd("LinkRoom");
-            var json = await hc.GetStringAsync("https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest");
-            var tag = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("tag_name").GetString();
-            var current = "v" + Version;
-            if (tag != null && tag != current && Current != null)
-            {
-                await Current.Dispatcher.InvokeAsync(() =>
-                {
-                    if (MessageBox.Show($"发现新版本 {tag}\n当前: {current}\n\n打开下载？", "LinkRoom",
-                            MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                        {
-                            FileName = $"https://github.com/WXFffff666/LinkRoom/releases/tag/{tag}",
-                            UseShellExecute = true
-                        });
-                });
-            }
+            var wizard = new WizardWindow(vm) { Owner = window };
+            wizard.ShowDialog();
         }
-        catch { }
+
+        if (vm.AutoCheckUpdate)
+            _ = vm.CheckUpdateOnStartupAsync();
+
+        if (cli?.Minimized == true) window.WindowState = WindowState.Minimized;
     }
 }

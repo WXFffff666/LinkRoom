@@ -56,8 +56,18 @@ public sealed class EasyTierConfigBuilder
         if (advanced.Mtu is >= 576 and <= 1500)
             sb.AppendLine($"mtu = {advanced.Mtu}");
 
-        if (advanced.PreferIPv6)
+        if (advanced.PreferIPv6 || advanced.Ipv6Only)
             sb.AppendLine("enable_ipv6 = true");
+
+        if (advanced.Ipv6Only)
+            sb.AppendLine("disable_ipv4 = true");
+
+        if (advanced.EnableSocks5 && advanced.Socks5Port is >= 1024 and <= 65535)
+        {
+            sb.AppendLine();
+            sb.AppendLine("[proxy]");
+            sb.AppendLine($"socks5_port = {advanced.Socks5Port}");
+        }
 
         // Path flags consolidated in TOML only (no CLI duplication)
         if (path != null)

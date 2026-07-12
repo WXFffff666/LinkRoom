@@ -76,6 +76,13 @@ public sealed record AppSettings
     public string? SharedNodeUrls { get; set; } = AppPaths.DefaultSharedNode;
     public string LogLevel { get; set; } = "Info";
     public bool IsUpnpDisabled { get; set; } = true;
+    public bool AutoCheckUpdate { get; set; } = true;
+    public string? SkippedUpdateVersion { get; set; }
+    public bool FirstRunCompleted { get; set; }
+    public bool Ipv6Only { get; set; }
+    public bool EnableSocks5 { get; set; }
+    public int Socks5Port { get; set; } = 1080;
+    public bool RoomLocked { get; set; }
     public string? CustomStunServers { get; set; }
     public int MaxReconnectAttempts { get; set; } = 5;
     public string? StaticVirtualIp { get; set; }
@@ -107,6 +114,10 @@ public record AdvancedOptions
     public bool UseLanMode { get; init; }
     public bool IsHostMode { get; init; } = true;
     public int? GamePortHint { get; init; }
+    public bool Ipv6Only { get; init; }
+    public bool EnableSocks5 { get; init; }
+    public int Socks5Port { get; init; } = 1080;
+    public bool RoomLocked { get; init; }
 }
 
 public record RoomOptions

@@ -9,6 +9,8 @@ namespace LinkRoom.Network;
 /// </summary>
 public sealed class StunServerProvider
 {
+    public static string? CachePathOverride { get; set; }
+
     readonly ILogger<StunServerProvider> _logger;
     readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(10) };
 
@@ -127,7 +129,8 @@ public sealed class StunServerProvider
         catch { /* ignore */ }
     }
 
-    static string StunCachePath() => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "LinkRoom", "config", "stun-servers.json");
+    static string StunCachePath() =>
+        StunServerProvider.CachePathOverride ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "LinkRoom", "config", "stun-servers.json");
 }

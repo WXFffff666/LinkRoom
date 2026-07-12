@@ -54,4 +54,40 @@ public partial class SettingsWindow : Window
         if (DataContext is MainViewModel vm)
             await vm.RefreshStunListCommand.ExecuteAsync(null);
     }
+
+    void RefreshNetwork_Click(object s, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+            vm.RefreshNetworkCommand.Execute(null);
+    }
+
+    async void CheckUpdate_Click(object s, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+            await vm.CheckUpdateManualCommand.ExecuteAsync(null);
+    }
+
+    async void ExportConfig_Click(object s, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+            await vm.ExportConfigCommand.ExecuteAsync(null);
+    }
+
+    async void ImportConfig_Click(object s, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+            await vm.ImportConfigCommand.ExecuteAsync(null);
+    }
+
+    void ScanMods_Click(object s, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+            vm.ScanModsCommand.Execute(null);
+    }
+
+    async void CheckEtVersion_Click(object s, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+            await vm.CheckEasyTierVersionCommand.ExecuteAsync(null);
+    }
 }

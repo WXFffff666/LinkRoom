@@ -3,12 +3,25 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
         ui:WindowHelper.UseModernWindowStyle="True"
-        Title="房间成员" Height="400" Width="500"
+        Title="房间成员" Height="420" Width="520"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize">
 
     <Grid Margin="12">
-        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" Text="👥 房间成员" FontSize="16" FontWeight="Bold" Foreground="#1D1D1F" Margin="0,0,0,8"/>
-        <ListBox Grid.Row="1" x:Name="PeerList" BorderBrush="#E5E5EA" Background="White"/>
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Text="👥 房间成员" FontSize="16" FontWeight="Bold" Foreground="#1D1D1F"/>
+            <Button Content="Ping 全部" DockPanel.Dock="Right" Height="28" Padding="8,0" Click="PingAll_Click"/>
+        </DockPanel>
+        <ListBox Grid.Row="1" x:Name="PeerList" BorderBrush="#E5E5EA" Background="White">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border Background="#F5F5F7" CornerRadius="6" Padding="8,6" Margin="0,2">
+                        <TextBlock FontSize="11" Foreground="#6E6E73" Text="{Binding}" TextWrapping="Wrap"/>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBlock Grid.Row="2" x:Name="PeerHint" FontSize="10" Foreground="#8E8E93" Margin="0,8,0,0"
+                   Text="显示 NAT / 延迟 / 路由 cost"/>
     </Grid>
 </Window>
