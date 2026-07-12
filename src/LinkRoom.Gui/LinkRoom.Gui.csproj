@@ -3,6 +3,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>LinkRoom.Gui</RootNamespace>
     <AssemblyName>LinkRoom.Gui</AssemblyName>
+    <NoWarn>VSTHRD100;VSTHRD200;VSTHRD103</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />

@@ -6,8 +6,8 @@
         ui:WindowHelper.SystemBackdropType="Mica"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.Height="40" ui:TitleBar.IsIconVisible="True"
-        Title="LinkRoom" Height="460" Width="400"
-        MinHeight="380" MinWidth="340"
+        Title="LinkRoom" Height="580" Width="420"
+        MinHeight="480" MinWidth="360"
         WindowStartupLocation="CenterScreen">
 
     <Grid>
@@ -24,20 +24,38 @@
                     BorderThickness="0" Click="UpdateCheck_Click" Cursor="Hand" DockPanel.Dock="Right"/>
         </DockPanel>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel VerticalAlignment="Center" Margin="40,0">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <StackPanel VerticalAlignment="Top" Margin="32,0">
             <TextBlock Text="LinkRoom" FontSize="24" FontWeight="Bold" Foreground="#1D1D1F" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-            <TextBlock Text="P2P 联机 · 创建或加入房间" FontSize="11" Foreground="#8E8E93" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+            <TextBlock Text="P2P 游戏联机 · 单文件便携" FontSize="11" Foreground="#8E8E93" HorizontalAlignment="Center" Margin="0,0,0,12"/>
 
-            <TextBlock Text="房间号" FontSize="12" Foreground="#8E8E93" Margin="0,0,0,6"/>
-            <TextBox FontSize="16" Padding="12,10" Text="{Binding RoomId, UpdateSourceTrigger=PropertyChanged}"
-                     BorderBrush="#E5E5EA" BorderThickness="1" ToolTip="创建时留空自动生成, 加入时输入好友房间号"/>
+            <!-- Host mode toggle -->
+            <CheckBox Content="🏠 房主模式（创建房间并主持游戏）" IsChecked="{Binding IsHostMode}"
+                      HorizontalAlignment="Center" Margin="0,0,0,12"/>
 
-            <TextBlock Text="密码（可选）" FontSize="12" Foreground="#8E8E93" Margin="0,14,0,6"/>
-            <PasswordBox FontSize="16" Padding="12,10" x:Name="PasswordBox" PasswordChanged="PasswordBox_PasswordChanged"
-                         BorderBrush="#E5E5EA" BorderThickness="1"/>
+            <TextBlock Text="房间号 / 联机码" FontSize="12" Foreground="#8E8E93" Margin="0,0,0,6"/>
+            <TextBox FontSize="14" Padding="12,10" Text="{Binding RoomId, UpdateSourceTrigger=PropertyChanged}"
+                     BorderBrush="#E5E5EA" ToolTip="支持 linkroom:// 链接或 房间号:密码"/>
 
-            <Grid Margin="0,20,0,0">
+            <!-- Room history -->
+            <ItemsControl ItemsSource="{Binding RoomHistory}" Margin="0,6,0,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Content="{Binding}" Tag="{Binding}" Click="History_Click"
+                                FontSize="10" Padding="6,2" Margin="0,0,4,4" Background="#F5F5F7" BorderBrush="#E5E5EA"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="密码（可选）" FontSize="12" Foreground="#8E8E93" Margin="0,10,0,4"/>
+            <PasswordBox FontSize="14" Padding="12,10" x:Name="PasswordBox" PasswordChanged="PasswordBox_PasswordChanged"
+                         BorderBrush="#E5E5EA"/>
+            <TextBlock Text="{Binding PasswordStrengthHint}" FontSize="10" Foreground="#FF9500" Margin="0,4,0,0"/>
+
+            <Grid Margin="0,16,0,0">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                 <Button Grid.Column="0" Content="创建房间" Height="44" FontSize="14" FontWeight="SemiBold"
                         Command="{Binding CreateRoomCommand}"
@@ -46,32 +64,48 @@
                         Command="{Binding ConnectCommand}"
                         Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
             </Grid>
-            <Button Content="断开" Height="40" FontSize="13" FontWeight="SemiBold" Margin="0,8,0,0"
+            <Button Content="断开连接" Height="36" FontSize="13" Margin="0,8,0,0"
                     Command="{Binding DisconnectCommand}"
                     Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
 
             <Border Background="#E8F5E9" CornerRadius="8" Padding="12" Margin="0,12,0,0"
                     x:Name="CreatedRoomPanel" Visibility="Collapsed">
                 <StackPanel>
-                    <TextBlock Text="✅ 房间已创建！" FontSize="13" FontWeight="SemiBold" Foreground="#2E7D32"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                        <TextBlock Text="房间号: " FontSize="16" FontWeight="Bold" Foreground="#1B5E20" VerticalAlignment="Center"/>
-                        <TextBox x:Name="CreatedRoomId" FontSize="16" FontWeight="Bold" Foreground="#1B5E20"
-                                 IsReadOnly="True" BorderThickness="0" Background="Transparent" Width="150"
-                                 MouseDoubleClick="CreatedRoomId_DoubleClick" ToolTip="双击复制" VerticalAlignment="Center"/>
-                    </StackPanel>
+                    <TextBlock Text="✅ 房间已创建" FontSize="13" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                    <TextBox x:Name="CreatedRoomId" FontSize="16" FontWeight="Bold" Foreground="#1B5E20"
+                             IsReadOnly="True" BorderThickness="0" Background="Transparent"
+                             MouseDoubleClick="CreatedRoomId_DoubleClick" ToolTip="双击复制房间号"/>
+                    <TextBox x:Name="LinkCodeText" FontSize="10" Foreground="#388E3C"
+                             IsReadOnly="True" BorderThickness="0" Background="Transparent" TextWrapping="Wrap"
+                             MouseDoubleClick="LinkCode_DoubleClick" ToolTip="双击复制联机链接"/>
+                    <Button Content="复制联机链接" Command="{Binding CopyLinkCodeCommand}" Margin="0,6,0,0" Height="28"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Connection quality dashboard -->
+            <Border Background="#F5F5F7" CornerRadius="8" Padding="10" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="{Binding ConnectionQuality}" FontSize="12" FontWeight="SemiBold" Foreground="#1D1D1F"/>
+                    <TextBlock FontSize="10" Foreground="#8E8E93" Margin="0,4,0,0">
+                        <Run Text="NAT: "/><Run Text="{Binding NatType, Mode=OneWay}"/>
+                        <Run Text=" | 公网: "/><Run Text="{Binding Ipv4, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock FontSize="10" Foreground="#8E8E93" Margin="0,2,0,0">
+                        <Run Text="虚拟 IPv4: "/><Run Text="{Binding VirtualIpv4, Mode=OneWay}"/>
+                        <Run Text=" | IPv6: "/><Run Text="{Binding VirtualIpv6, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding PortForwardHint}" FontSize="10" Foreground="#007AFF" Margin="0,4,0,0" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
 
             <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#8E8E93" HorizontalAlignment="Center"
                        Margin="0,10,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
 
-            <!-- Peer list (visible when connected) -->
             <ItemsControl ItemsSource="{Binding Peers}" Margin="0,8,0,0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Background="#F5F5F7" CornerRadius="6" Padding="8,6" Margin="0,2">
-                            <TextBlock FontSize="11" Foreground="#6E6E73" TextWrapping="Wrap"/>
+                            <TextBlock FontSize="11" Foreground="#6E6E73" Text="{Binding}" TextWrapping="Wrap"/>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -79,11 +113,11 @@
         </StackPanel>
         </ScrollViewer>
 
-        <Border Grid.Row="2" Padding="6" Background="Transparent">
+        <Border Grid.Row="2" Padding="8,6" Background="Transparent">
             <DockPanel>
-                <TextBlock x:Name="UpdateLabel" Text="v1.12.0" FontSize="10" Foreground="#C7C7CC" DockPanel.Dock="Right"
+                <TextBlock x:Name="UpdateLabel" FontSize="10" Foreground="#C7C7CC" DockPanel.Dock="Right"
                            Cursor="Hand" MouseDown="UpdateLabel_MouseDown" ToolTip="点击检查更新"/>
-                <TextBlock Text="{Binding StatusDetail}" FontSize="10" Foreground="#C7C7CC"/>
+                <TextBlock Text="{Binding StatusDetail}" FontSize="10" Foreground="#C7C7CC" TextWrapping="Wrap"/>
             </DockPanel>
         </Border>
     </Grid>

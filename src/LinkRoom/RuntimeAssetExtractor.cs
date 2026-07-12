@@ -2,32 +2,25 @@ using System.IO;
 using System.Reflection;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using LinkRoom.Core;
 
 namespace LinkRoom;
 
-/// <summary>
-/// Extracts embedded EasyTier runtime assets from the single-file exe
-/// to %LOCALAPPDATA%\LinkRoom\runtime\<version>\ on first launch.
-/// Verifies extraction, restricts ACLs, prevents multiple instances.
-/// </summary>
 public static class RuntimeAssetExtractor
 {
-    private static readonly string[] Assets =
+    static readonly string[] Assets =
     [
-        "easytier-core.exe", "easytier-cli.exe",
+        "easytier-core.exe", "easytier-cli.exe", "easytier-web.exe", "easytier-web-embed.exe",
         "wintun.dll", "Packet.dll", "WinDivert64.sys"
     ];
 
-    private static string? _runtimeDir;
+    static string? _runtimeDir;
 
-    public static string RuntimeDir => _runtimeDir ?? throw new InvalidOperationException("Runtime not extracted yet.");
+    public static string RuntimeDir => _runtimeDir ?? throw new InvalidOperationException("Runtime not extracted.");
 
-    /// <summary>Extracts all runtime assets. Skips if already present.</summary>
-    public static string EnsureExtracted(string version = "2.6.4")
+    public static string EnsureExtracted(string version = AppPaths.EasyTierVersion)
     {
-        _runtimeDir = Path.Combine(
-            Path.GetDirectoryName(Environment.ProcessPath!)!,
-            "runtime", version);
+        _runtimeDir = AppPaths.RuntimeDir;
 
         if (Directory.Exists(_runtimeDir) && AllPresent())
             return _runtimeDir;
@@ -40,12 +33,9 @@ public static class RuntimeAssetExtractor
         {
             var resName = $"easytier.{name}";
             using var stream = asm.GetManifestResourceStream(resName);
-            if (stream == null)
-            {
-                System.Diagnostics.Debug.WriteLine($"RuntimeAsset: {resName} NOT FOUND in embedded resources");
-                continue;
-            }
+            if (stream == null) continue;
             var dest = Path.Combine(_runtimeDir, name);
+            if (File.Exists(dest) && new FileInfo(dest).Length > 0) continue;
             using var fs = File.Create(dest);
             stream.CopyTo(fs);
         }
@@ -53,7 +43,7 @@ public static class RuntimeAssetExtractor
         return _runtimeDir;
     }
 
-    private static bool AllPresent()
+    static bool AllPresent()
     {
         foreach (var name in Assets)
         {
@@ -63,7 +53,7 @@ public static class RuntimeAssetExtractor
         return true;
     }
 
-    private static void RestrictAcl(string dir)
+    static void RestrictAcl(string dir)
     {
         try
         {
@@ -77,6 +67,6 @@ public static class RuntimeAssetExtractor
                 PropagationFlags.None, AccessControlType.Allow));
             di.SetAccessControl(sec);
         }
-        catch { /* best effort */ }
+        catch { }
     }
 }

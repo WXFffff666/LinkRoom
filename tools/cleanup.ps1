@@ -1,29 +1,16 @@
-# LinkRoom cleanup script
-# Stops any running LinkRoom instance and removes Wintun adapter + runtime data.
-# Run as Administrator.
+# Cleanup LinkRoom runtime data
+param([string]$DataRoot = "")
 
-$ErrorActionPreference = "Continue"
-Write-Host "=== LinkRoom Cleanup ===" -ForegroundColor Cyan
-
-# Kill running instances
-$procs = Get-Process -Name "LinkRoom" -ErrorAction SilentlyContinue
-if ($procs) {
-    Write-Host "Stopping LinkRoom..." -ForegroundColor Yellow
-    $procs | Stop-Process -Force
+if (-not $DataRoot) {
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $portable = Join-Path (Resolve-Path "$scriptDir\..") "LinkRoomData"
+    if (Test-Path $portable) { $DataRoot = $portable }
+    else { $DataRoot = "$env:LOCALAPPDATA\LinkRoom" }
 }
 
-# Remove Wintun adapter (if present)
-Write-Host "Removing Wintun adapter..." -ForegroundColor Yellow
-$adapters = Get-NetAdapter -Name "*linkroom*" -ErrorAction SilentlyContinue
-if ($adapters) {
-    $adapters | Remove-NetAdapter -Confirm:$false
+Write-Host "Cleaning $DataRoot ..." -ForegroundColor Yellow
+foreach ($sub in @("temp", "logs", "diagnostics")) {
+    $p = Join-Path $DataRoot $sub
+    if (Test-Path $p) { Remove-Item -Recurse -Force $p; Write-Host "  Removed $sub" }
 }
-
-# Remove runtime data
-$appDir = "$env:LOCALAPPDATA\LinkRoom"
-if (Test-Path $appDir) {
-    Write-Host "Removing $appDir..." -ForegroundColor Yellow
-    Remove-Item -Recurse -Force $appDir
-}
-
-Write-Host "=== Cleanup complete ===" -ForegroundColor Green
+Write-Host "Done." -ForegroundColor Green

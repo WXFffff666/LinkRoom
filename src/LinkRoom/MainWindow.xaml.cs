@@ -11,20 +11,78 @@ public partial class MainWindow : Window, IMainWindowView
     public MainWindow()
     {
         InitializeComponent();
+        UpdateLabel.Text = "v" + App.Version;
         DataContextChanged += (_, _) =>
-        { if (DataContext is Gui.MainViewModel vm) vm.PropertyChanged += (_, e) => { if (e.PropertyName == "DarkMode") ThemeManager.Current.ApplicationTheme = vm.DarkMode ? ApplicationTheme.Dark : ApplicationTheme.Light; }; };
-        StateChanged += (_, _) => { if (WindowState == WindowState.Minimized) { ShowInTaskbar = false; TrayHelper.Show(this); } else { ShowInTaskbar = true; TrayHelper.Hide(); } };
+        {
+            if (DataContext is Gui.MainViewModel vm)
+            {
+                vm.PropertyChanged += (_, e) =>
+                {
+                    if (e.PropertyName == "DarkMode")
+                        ThemeManager.Current.ApplicationTheme = vm.DarkMode ? ApplicationTheme.Dark : ApplicationTheme.Light;
+                };
+            }
+        };
+        StateChanged += (_, _) =>
+        {
+            if (WindowState == WindowState.Minimized) { ShowInTaskbar = false; TrayHelper.Show(this); }
+            else { ShowInTaskbar = true; TrayHelper.Hide(); }
+        };
         Closing += (_, _) => TrayHelper.Hide();
-        SourceInitialized += (_, _) => { var h = new WindowInteropHelper(this).Handle; HwndSource.FromHwnd(h)?.AddHook((IntPtr hw, int m, IntPtr w, IntPtr l, ref bool handled) => { if (m == 0x0203) { Show(); WindowState = WindowState.Normal; Activate(); handled = true; } return IntPtr.Zero; }); };
+        SourceInitialized += (_, _) =>
+        {
+            var h = new WindowInteropHelper(this).Handle;
+            HwndSource.FromHwnd(h)?.AddHook((IntPtr hw, int m, IntPtr w, IntPtr l, ref bool handled) =>
+            {
+                if (m == 0x0203) { Show(); WindowState = WindowState.Normal; Activate(); handled = true; }
+                return IntPtr.Zero;
+            });
+        };
     }
 
-    void PasswordBox_PasswordChanged(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) vm.Password = ((PasswordBox)s).Password; }
-    void CreatedRoomId_DoubleClick(object s, System.Windows.Input.MouseButtonEventArgs e) { if (CreatedRoomId.Text.Length > 0) { Clipboard.SetText(CreatedRoomId.Text); MessageBox.Show("已复制"); } }
-    void OpenSettings_Click(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) { var d = new SettingsWindow(vm); d.Owner = this; d.ShowDialog(); } }
-    void OpenPeerList_Click(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) { new PeerListWindow(vm.Peers) { Owner = this }.Show(); } }
-    void OpenLog_Click(object s, RoutedEventArgs e) { if (DataContext is Gui.MainViewModel vm) { var d = new LogWindow(Gui.MainViewModel.LogLines); d.Owner = this; d.ShowDialog(); } }
+    void PasswordBox_PasswordChanged(object s, RoutedEventArgs e)
+    {
+        if (DataContext is Gui.MainViewModel vm) vm.Password = ((PasswordBox)s).Password;
+    }
 
-    public void ShowCreatedRoom(string id) => Dispatcher.Invoke(() => { CreatedRoomId.Text = id; CreatedRoomPanel.Visibility = Visibility.Visible; });
+    void CreatedRoomId_DoubleClick(object s, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (CreatedRoomId.Text.Length > 0) { Clipboard.SetText(CreatedRoomId.Text); MessageBox.Show("已复制房间号"); }
+    }
+
+    void LinkCode_DoubleClick(object s, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (LinkCodeText.Text.Length > 0) { Clipboard.SetText(LinkCodeText.Text); MessageBox.Show("已复制联机链接"); }
+    }
+
+    void OpenSettings_Click(object s, RoutedEventArgs e)
+    {
+        if (DataContext is Gui.MainViewModel vm) { var d = new SettingsWindow(vm) { Owner = this }; d.ShowDialog(); }
+    }
+
+    void OpenPeerList_Click(object s, RoutedEventArgs e)
+    {
+        if (DataContext is Gui.MainViewModel vm) new PeerListWindow(vm.Peers) { Owner = this }.Show();
+    }
+
+    void OpenLog_Click(object s, RoutedEventArgs e)
+    {
+        new LogWindow(Gui.MainViewModel.LogLines) { Owner = this }.ShowDialog();
+    }
+
+    void History_Click(object s, RoutedEventArgs e)
+    {
+        if (s is Button b && b.Tag is string room && DataContext is Gui.MainViewModel vm)
+            vm.RoomId = room;
+    }
+
+    public void ShowCreatedRoom(string id, string? linkCode = null) => Dispatcher.Invoke(() =>
+    {
+        CreatedRoomId.Text = id;
+        LinkCodeText.Text = linkCode ?? "";
+        CreatedRoomPanel.Visibility = Visibility.Visible;
+    });
+
     public string GetCreatePassword() => PasswordBox.Password;
     public void SetPasswordText(string pw) => Dispatcher.Invoke(() => PasswordBox.Password = pw);
     public void AppendLog(string line) => Dispatcher.Invoke(() => Gui.MainViewModel.LogLines.Add(line));
@@ -35,7 +93,14 @@ public partial class MainWindow : Window, IMainWindowView
     async Task CheckUpdateAsync()
     {
         UpdateLabel.Text = "checking...";
-        try { using var hc = new System.Net.Http.HttpClient(); hc.DefaultRequestHeaders.UserAgent.ParseAdd("LinkRoom"); var json = await hc.GetStringAsync("https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest");             var tag = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("tag_name").GetString(); UpdateLabel.Text = tag == "v1.12.0" ? "latest" : $"new {tag}"; }
+        try
+        {
+            using var hc = new System.Net.Http.HttpClient();
+            hc.DefaultRequestHeaders.UserAgent.ParseAdd("LinkRoom");
+            var json = await hc.GetStringAsync("https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest");
+            var tag = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("tag_name").GetString();
+            UpdateLabel.Text = tag == "v" + App.Version ? "latest" : $"new {tag}";
+        }
         catch { UpdateLabel.Text = "failed"; }
     }
 }

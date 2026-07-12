@@ -7,6 +7,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <RootNamespace>LinkRoom</RootNamespace>
     <AssemblyName>LinkRoom</AssemblyName>
+    <Version>1.15.0</Version>
     <NoWarn>VSTHRD100;VSTHRD200</NoWarn>
     <!-- Single-file publish config (inline to ensure WPF SDK applies it) -->
     <PublishSingleFile>true</PublishSingleFile>
@@ -39,5 +40,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
   </ItemGroup>
+
+  <Target Name="FetchEasyTier" BeforeTargets="PrepareForBuild"
+          Condition="!Exists('..\LinkRoom.Core\Assets\easytier\easytier-core.exe')">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\..\tools\fetch-easytier.ps1&quot;" />
+  </Target>
 
 </Project>

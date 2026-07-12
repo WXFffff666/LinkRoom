@@ -1,8 +1,5 @@
 namespace LinkRoom.Network;
 
-/// <summary>
-/// NAT type classification determined by STUN detection.
-/// </summary>
 public enum NatType
 {
     Unknown,
@@ -15,9 +12,6 @@ public enum NatType
     Blocked,
 }
 
-/// <summary>
-/// Result of a NAT type detection.
-/// </summary>
 public record NatDetectionResult
 {
     public NatType NatType { get; init; }
@@ -32,9 +26,6 @@ public record NatDetectionResult
     public bool HasIPv6 => !string.IsNullOrEmpty(PublicIPv6);
 }
 
-/// <summary>
-/// Immutable snapshot of the current network environment.
-/// </summary>
 public sealed record NetworkSnapshot
 {
     public NatType NatType { get; init; }
@@ -53,9 +44,6 @@ public sealed record NetworkSnapshot
     public bool IsSymmetric => NatType is NatType.Symmetric or NatType.SymmetricUdpFirewall;
 }
 
-/// <summary>
-/// Abstraction for NAT type detection.
-/// </summary>
 public interface INatDetector
 {
     Task<NatDetectionResult> DetectAsync(CancellationToken cancellationToken = default);

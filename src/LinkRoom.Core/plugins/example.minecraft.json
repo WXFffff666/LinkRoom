@@ -1,0 +1,8 @@
+[
+  {
+    "Id": "minecraft-java",
+    "DisplayName": "Minecraft Java",
+    "DefaultPort": 25565,
+    "Protocol": "tcp"
+  }
+]

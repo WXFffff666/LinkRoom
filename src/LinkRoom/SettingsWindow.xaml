@@ -3,99 +3,59 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
         ui:WindowHelper.UseModernWindowStyle="True"
-        Title="设置" Height="520" Width="400"
+        Title="设置" Height="620" Width="420"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="24,16">
             <TextBlock Text="⚙ 高级设置" FontSize="18" FontWeight="Bold" Foreground="#1D1D1F" Margin="0,0,0,16"/>
 
-            <!-- Listener Port -->
-            <TextBlock Text="监听端口" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <TextBlock Text="EasyTier 核心使用的 P2P 通信端口" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
-            <TextBox Padding="8,6" Text="{Binding ListenerPort, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA"
-                     ToolTip="默认 11010, 范围 1024-65535" Margin="0,0,0,16"/>
+            <TextBlock Text="连接模式" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+            <CheckBox Content="LAN 模式（虚拟网卡 + UDP 广播，MC 等自动发现）" IsChecked="{Binding UseLanMode}" Margin="0,0,0,4"/>
+            <TextBlock Text="LAN 模式需管理员权限；轻量模式无需虚拟网卡" FontSize="10" Foreground="#8E8E93" Margin="0,0,0,12"/>
 
-            <!-- Shared Node -->
-            <TextBlock Text="共享节点" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <TextBlock Text="通过中继节点连接（非 P2P 直连）" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
-            <CheckBox Content="启用共享节点" IsChecked="{Binding IsSharedNodeEnabled}" Margin="0,0,0,8"/>
+            <TextBlock Text="监听端口" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <TextBox Padding="8,6" Text="{Binding ListenerPort, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA" Margin="0,0,0,12"/>
+
+            <TextBlock Text="共享节点（中继）" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <CheckBox Content="启用共享节点" IsChecked="{Binding IsSharedNodeEnabled}" Margin="0,0,0,4"/>
             <TextBox Padding="8,6" Text="{Binding SharedNodeUrls}" IsEnabled="{Binding IsSharedNodeEnabled}"
-                     BorderBrush="#E5E5EA" ToolTip="tcp://host:port, 多个用逗号分隔"
-                     Margin="0,0,0,16"/>
+                     BorderBrush="#E5E5EA" ToolTip="默认 public.easytier.top:11010" Margin="0,0,0,12"/>
 
-            <!-- UPnP -->
-            <TextBlock Text="UPnP" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <TextBlock Text="自动配置路由器端口映射（Symmetric NAT 时建议开启）" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
-            <CheckBox Content="禁用 UPnP" IsChecked="{Binding IsUpnpDisabled}" Margin="0,0,0,16"/>
-
-            <!-- STUN -->
-            <TextBlock Text="STUN 服务器" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <TextBlock Text="用于检测 NAT 类型，多服务器逗号分隔" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
+            <TextBlock Text="STUN 服务器" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
             <TextBox Padding="8,6" Text="{Binding CustomStunServers}" BorderBrush="#E5E5EA"
-                     ToolTip="留空使用默认 Google STUN" Margin="0,0,0,16"/>
+                     ToolTip="host:port 逗号分隔，留空用默认" Margin="0,0,0,4"/>
+            <Button Content="🔄 更新远程 STUN 列表" Height="32" Click="RefreshStun_Click" Margin="0,0,0,12"/>
 
-            <!-- Reconnect -->
-            <TextBlock Text="自动重连" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <TextBlock Text="掉线后自动重试次数" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
-            <TextBox Padding="8,6" Text="{Binding MaxReconnectAttempts, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA"
-                     ToolTip="默认 5 次，0 表示不重连" Margin="0,0,0,16"/>
+            <TextBlock Text="自动重连" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <TextBox Padding="8,6" Text="{Binding MaxReconnectAttempts, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA" Margin="0,0,0,12"/>
 
-            <!-- Log Level -->
-            <TextBlock Text="日志级别" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <ComboBox SelectedIndex="0" Text="{Binding LogLevel}" Margin="0,0,0,16">
-                <ComboBoxItem Content="Info"/><ComboBoxItem Content="Debug"/>
-                <ComboBoxItem Content="Warning"/><ComboBoxItem Content="Error"/>
-            </ComboBox>
+            <TextBlock Text="虚拟 IP / MTU / IPv6" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <TextBox Padding="8,6" Text="{Binding StaticVirtualIp}" BorderBrush="#E5E5EA" ToolTip="留空 DHCP" Margin="0,0,0,4"/>
+            <TextBox Padding="8,6" Text="{Binding Mtu, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA" Margin="0,0,0,4"/>
+            <CheckBox Content="优先 IPv6" IsChecked="{Binding PreferIPv6}" Margin="0,0,0,12"/>
 
-            <!-- Static IP -->
-            <TextBlock Text="虚拟 IP" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <TextBlock Text="留空使用 DHCP 自动分配" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
-            <TextBox Padding="8,6" Text="{Binding StaticVirtualIp}" BorderBrush="#E5E5EA"
-                     ToolTip="如 10.144.1.5" Margin="0,0,0,16"/>
+            <TextBlock Text="数据存储" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <CheckBox Content="便携模式（LinkRoomData/ 在 exe 同目录）" IsChecked="{Binding PortableMode}" Margin="0,0,0,4"/>
+            <CheckBox Content="开机自启" IsChecked="{Binding AutoStart}" Margin="0,0,0,4"/>
+            <CheckBox Content="暗色模式" IsChecked="{Binding DarkMode}" Margin="0,0,0,12"/>
 
-            <!-- MTU -->
-            <TextBlock Text="MTU" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <TextBlock Text="虚拟网卡最大传输单元（默认 1380）" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
-            <TextBox Padding="8,6" Text="{Binding Mtu, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA"
-                     ToolTip="范围 576-1500" Margin="0,0,0,16"/>
+            <TextBlock Text="🎮 游戏端口" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <Button Content="🔍 扫描本地游戏端口" Height="36" Click="ScanGamePorts_Click" Margin="0,0,0,4"/>
+            <TextBlock x:Name="GamePortResult" FontSize="12" Foreground="#2E7D32" TextWrapping="Wrap" Margin="0,0,0,12"/>
 
-            <!-- IPv6 -->
-            <TextBlock Text="IPv6" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <CheckBox Content="优先使用 IPv6" IsChecked="{Binding PreferIPv6}" Margin="0,0,0,16"/>
+            <TextBlock Text="🧪 NAT 检测" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <Button Content="🔍 立即检测 NAT" Height="36" Click="TestNat_Click" Margin="0,0,0,4"/>
+            <TextBlock x:Name="NatTestResult" FontSize="11" Foreground="#6E6E73" TextWrapping="Wrap" Margin="0,0,0,12"/>
 
-            <!-- Portable Mode -->
-            <TextBlock Text="数据存储" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <CheckBox Content="便携模式（数据存储在 exe 同目录）" IsChecked="{Binding PortableMode}" Margin="0,0,0,16"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <Button Content="🔍 自检" Height="36" Width="100" Click="RunSelfCheck_Click" Margin="0,0,8,0"/>
+                <Button Content="📦 导出诊断包" Height="36" Width="120" Click="ExportDiag_Click" Margin="0,0,8,0"/>
+                <Button Content="🌐 Web 面板" Height="36" Width="100" Click="OpenWebPanel_Click"/>
+            </StackPanel>
+            <TextBlock x:Name="SelfCheckResult" FontSize="11" Foreground="#6E6E73" TextWrapping="Wrap" Margin="0,0,0,12"/>
 
-            <!-- Dark Theme -->
-            <TextBlock Text="外观" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <CheckBox Content="暗色模式" IsChecked="{Binding DarkMode}" Margin="0,0,0,16"/>
-
-            <!-- Game Port Scanner -->
-            <TextBlock Text="🎮 游戏端口检测" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <TextBlock Text="自动扫描本地运行的常见游戏端口" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
-            <Button Content="🔍 扫描本地游戏端口" Height="36" FontSize="13" Margin="0,0,0,8"
-                    Click="ScanGamePorts_Click"/>
-            <TextBlock x:Name="GamePortResult" Text="" FontSize="12" Foreground="#2E7D32"
-                       TextWrapping="Wrap" Margin="0,0,0,16"/>
-
-            <!-- NAT Test -->
-            <TextBlock Text="🧪 NAT 检测" FontSize="14" FontWeight="SemiBold" Foreground="#1D1D1F" Margin="0,0,0,4"/>
-            <TextBlock Text="手动触发 Stun.Net NAT 类型检测" FontSize="11" Foreground="#8E8E93" Margin="0,0,0,8"/>
-            <Button Content="🔍 立即检测 NAT 类型" Height="36" FontSize="13" Margin="0,0,0,8" Click="TestNat_Click"/>
-            <TextBlock x:Name="NatTestResult" Text="" FontSize="12" Foreground="#6E6E73" TextWrapping="Wrap" Margin="0,0,0,16"/>
-
-            <!-- Self-Check Button -->
-            <Button Content="🔍 运行自检" Height="40" FontSize="14" Margin="0,0,0,12"
-                    Click="RunSelfCheck_Click"
-                    Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
-
-            <TextBlock x:Name="SelfCheckResult" Text="" FontSize="12" Foreground="#6E6E73"
-                       TextWrapping="Wrap" Margin="0,0,0,12"/>
-
-            <!-- Close -->
-            <Button Content="关闭" Height="36" FontSize="13" Click="Close_Click"/>
+            <Button Content="关闭" Height="36" Click="Close_Click"/>
         </StackPanel>
     </ScrollViewer>
 </Window>
