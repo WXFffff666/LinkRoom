@@ -207,6 +207,29 @@ internal sealed class UpdateAndToolsService
         _vm.L("网络检测缓存已刷新，下次连接将重新检测");
     }
 
+    internal void DetectGame()
+    {
+        var hits = GameDetectorService.DetectRunningGames();
+        _vm.DetectedGames = hits;
+        _vm.GameDetectResult = hits.Count == 0
+            ? "未检测到运行中的游戏"
+            : $"检测到 {hits.Count} 个游戏，点击下方游戏名一键开房";
+        _vm.L(hits.Count == 0
+            ? "游戏检测: 未检测到运行中的游戏"
+            : $"游戏检测: {string.Join("、", hits.Select(h => $"{h.GameName}({h.ProcessName}.exe)"))}");
+    }
+
+    internal void ApplyDetectedGame(GameProcessInfo? game)
+    {
+        if (game == null) return;
+        _vm.GamePortHint = game.Port;
+        _vm.PortForwardHint = string.IsNullOrWhiteSpace(_vm.VirtualIpv4)
+            ? $"游戏端口: {game.Port}（{game.GameName}）— 连接房间后自动显示好友连接地址"
+            : $"好友连接: {_vm.VirtualIpv4}:{game.Port}";
+        _settings.SaveSettingsNow();
+        _vm.L($"一键开房: {game.GameName} 端口 {game.Port} 已设置并保存");
+    }
+
     internal async Task PingPeersAsync()
     {
         foreach (var p in _vm.Peers.ToList())

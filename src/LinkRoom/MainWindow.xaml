@@ -119,6 +119,26 @@
                 </StackPanel>
             </Border>
 
+            <!-- Game process auto-detection + one-click host -->
+            <Border Background="#F0F4FF" CornerRadius="8" Padding="10" Margin="0,12,0,0">
+                <StackPanel>
+                    <Button Content="🎮 检测游戏" Height="30" FontSize="12" Padding="12,0"
+                            HorizontalAlignment="Left" Command="{Binding DetectGameCommand}"/>
+                    <TextBlock Text="{Binding GameDetectResult}" FontSize="10" Foreground="#007AFF"
+                               Margin="0,6,0,0" TextWrapping="Wrap"/>
+                    <ItemsControl ItemsSource="{Binding DetectedGames}" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding DisplayText}" Height="26" FontSize="10"
+                                        Padding="8,0" Margin="0,2" HorizontalContentAlignment="Left"
+                                        Command="{Binding DataContext.ApplyDetectedGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}" ToolTip="点击设置该游戏端口并一键开房"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
             <!-- In-room chat (virtual network) -->
             <Expander Header="💬 房间聊天" Margin="0,10,0,0">
                 <StackPanel Margin="0,6,0,0">

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -55,6 +56,8 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] bool _useLanMode, _isHostMode = true, _autoStart;
     [ObservableProperty] int? _gamePortHint;
     [ObservableProperty] string _portForwardHint = "";
+    [ObservableProperty] List<GameProcessInfo>? _detectedGames;
+    [ObservableProperty] string _gameDetectResult = "";
     [ObservableProperty] string _statusText = "就绪", _statusDetail = "创建房间或输入联机码加入";
     [ObservableProperty] string _chatInput = "";
     public ObservableCollection<string> Peers { get; } = new();
@@ -217,6 +220,12 @@ public partial class MainViewModel : ObservableObject
 
     [RelayCommand]
     void RefreshNetwork() => _tools.RefreshNetwork();
+
+    [RelayCommand]
+    void DetectGame() => _tools.DetectGame();
+
+    [RelayCommand]
+    void ApplyDetectedGame(GameProcessInfo? game) => _tools.ApplyDetectedGame(game);
 
     public Task CheckUpdateOnStartupAsync() => _tools.CheckUpdateOnStartupAsync();
 
