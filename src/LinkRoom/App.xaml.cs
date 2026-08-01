@@ -194,6 +194,7 @@ public partial class App : Application
         var saved = settingsService.Load();
         AppPaths.Configure(saved.PortableMode);
         AppPaths.EnsureDataDirectories();
+        AppPaths.CleanupTempConfigs();
         StunServerProvider.CachePathOverride = AppPaths.StunCachePath;
         PluginRegistry.LoadFromDirectory(AppPaths.PluginsDir);
 

@@ -68,16 +68,27 @@ public static class AppPaths
             Directory.CreateDirectory(TempDir);
             Directory.CreateDirectory(DiagnosticsDir);
             Directory.CreateDirectory(PluginsDir);
-
-            // Crash cleanup (BUG-12): temp EasyTier configs may contain the room
-            // secret — remove any residue left by a crashed previous run.
-            foreach (var f in Directory.EnumerateFiles(TempDir, "*.toml"))
-                try { File.Delete(f); } catch { }
         }
         catch (Exception ex)
         {
             throw new IOException($"无法创建数据目录 {DataRoot}: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Crash cleanup (BUG-12): temp EasyTier configs may contain the room
+    /// secret — remove any residue left by a crashed previous run. Called once
+    /// at startup; kept out of EnsureDataDirectories so parallel writers
+    /// (e.g. tests) do not delete each other's in-flight configs.
+    /// </summary>
+    public static void CleanupTempConfigs()
+    {
+        try
+        {
+            foreach (var f in Directory.EnumerateFiles(TempDir, "*.toml"))
+                try { File.Delete(f); } catch { }
+        }
+        catch { }
     }
 
     static bool IsDirectoryWritable(string dir)
