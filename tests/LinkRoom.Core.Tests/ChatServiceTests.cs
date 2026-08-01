@@ -145,7 +145,18 @@ public class ChatServiceTests
         await client.ConnectAsync(IPAddress.Loopback, port);
 
         // host -> broadcast -> guest
-        Assert.Null(svc.SendMessage("host", "hello guest"));
+        // The host registers accepted clients asynchronously (AcceptLoopAsync), so
+        // right after ConnectAsync the client may not be in _clients yet and
+        // SendMessage would return "房间内暂无其他成员". Poll-retry until the
+        // broadcast succeeds (host has accepted the guest) or give up after 1s.
+        string? result = null;
+        for (var i = 0; i < 20; i++)
+        {
+            result = svc.SendMessage("host", "hello guest");
+            if (result == null) break;
+            await Task.Delay(50);
+        }
+        Assert.Null(result);
 
         var msg = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal("host", msg.From);
