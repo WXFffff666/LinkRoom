@@ -10,6 +10,9 @@ public partial class SettingsWindow : Window
     {
         InitializeComponent();
         DataContext = vm;
+        PluginList.ItemsSource = PluginRegistry.All.Count == 0
+            ? new[] { "（未加载任何插件）" }
+            : PluginRegistry.All.Select(p => $"{p.DisplayName}（{p.Id}）· 默认端口 {p.DefaultPort}").ToList();
     }
 
     void Close_Click(object s, RoutedEventArgs e) => Close();

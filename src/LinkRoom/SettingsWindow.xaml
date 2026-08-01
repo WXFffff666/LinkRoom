@@ -76,6 +76,15 @@
             </StackPanel>
             <TextBlock x:Name="SelfCheckResult" FontSize="11" Foreground="#6E6E73" TextWrapping="Wrap" Margin="0,0,0,12"/>
 
+            <TextBlock Text="🧩 已加载插件" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <ItemsControl x:Name="PluginList" FontSize="12" Foreground="#6E6E73" Margin="0,0,0,12">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,2"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
             <Button Content="关闭" Height="36" Click="Close_Click"/>
         </StackPanel>
     </ScrollViewer>

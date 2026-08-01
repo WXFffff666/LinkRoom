@@ -186,9 +186,7 @@ public partial class App : Application
         base.OnStartup(e);
         Exit += (_, _) => EasyTierProcessService.KillOrphanProcesses();
 
-        MessageBoxCompat.ShowHandler = (msg, title) =>
-            MessageBox.Show(msg, title, MessageBoxButton.OK, MessageBoxImage.Information);
-
+        // Services are manually wired in App.OnStartup (ServiceConfigurator removed as dead code)
         var cli = CliRunner.Parse(e.Args);
         var settingsService = new SettingsService();
         var saved = settingsService.Load();

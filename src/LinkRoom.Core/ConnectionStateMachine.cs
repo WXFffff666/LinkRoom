@@ -55,13 +55,6 @@ public sealed class ConnectionStateMachine
         CurrentState = ConnectionState.Connecting;
     }
 
-    /// <summary>Network detection failed.</summary>
-    public void DetectionFailed()
-    {
-        if (CurrentState != ConnectionState.DetectingNetwork) return;
-        CurrentState = ConnectionState.Disconnected;
-    }
-
     /// <summary>EasyTier core is running and CLI is responsive.</summary>
     public void EasyTierReady()
     {
@@ -104,12 +97,6 @@ public sealed class ConnectionStateMachine
     {
         if (CurrentState is ConnectionState.Idle or ConnectionState.Disconnected) return;
         CurrentState = ConnectionState.Disconnected;
-    }
-
-    /// <summary>Reset to Idle (e.g., after cleanup).</summary>
-    public void Reset()
-    {
-        CurrentState = ConnectionState.Idle;
     }
 }
 

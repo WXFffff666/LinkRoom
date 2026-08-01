@@ -116,21 +116,4 @@ public static class AdminHelper
         }
         catch { return false; }
     }
-
-    public static bool RequestLanModeAdmin(bool useLanMode)
-    {
-        if (!useLanMode) return true;
-        if (IsAdministrator()) return true;
-        MessageBoxCompat.Show(
-            "LAN 模式需要虚拟网卡（Wintun），请以管理员身份重新运行 LinkRoom。",
-            "需要管理员权限");
-        return false;
-    }
-}
-
-/// <summary>Abstraction to avoid WPF reference in Core for admin messages.</summary>
-public static class MessageBoxCompat
-{
-    public static Action<string, string>? ShowHandler { get; set; }
-    public static void Show(string message, string title) => ShowHandler?.Invoke(message, title);
 }

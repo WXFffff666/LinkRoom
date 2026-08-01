@@ -15,8 +15,6 @@ public sealed class RollingLogSink : ILoggerProvider, ILogger
     private readonly object _fileLock = new();
     private readonly string? _filePath;
 
-    public event Action<LogEntry>? OnEntryAdded;
-
     public RollingLogSink(string? filePath = null, int maxEntries = 500)
     {
         _filePath = filePath;
@@ -35,8 +33,6 @@ public sealed class RollingLogSink : ILoggerProvider, ILogger
         _entries.Enqueue(entry);
         while (_entries.Count > _maxEntries)
             _entries.TryDequeue(out _);
-
-        OnEntryAdded?.Invoke(entry);
 
         // Write to file if configured
         if (_filePath != null)
@@ -57,13 +53,6 @@ public sealed class RollingLogSink : ILoggerProvider, ILogger
 
     public bool IsEnabled(LogLevel logLevel) => true;
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-
-    /// <summary>Returns all current log entries for UI display.</summary>
-    public string GetAllText()
-    {
-        return string.Join(Environment.NewLine,
-            _entries.Select(e => $"[{e.Timestamp:HH:mm:ss}] [{e.Level}] {e.Message}"));
-    }
 
     public void Dispose() { }
 }

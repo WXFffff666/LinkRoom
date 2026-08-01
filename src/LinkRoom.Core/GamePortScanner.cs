@@ -1,6 +1,4 @@
-using System.Net;
 using System.Net.NetworkInformation;
-using System.Net.Sockets;
 
 namespace LinkRoom.Core;
 
@@ -42,20 +40,5 @@ public static class GamePortScanner
                 open.Add((name, port));
         }
         return open;
-    }
-
-    /// <summary>Checks if a specific port is open on the local machine.</summary>
-    public static bool IsPortOpen(int port)
-    {
-        try
-        {
-            using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Bind(new IPEndPoint(IPAddress.Loopback, port));
-            return true; // Port is free (not in use by another app)
-        }
-        catch (SocketException)
-        {
-            return false; // Port is in use
-        }
     }
 }
