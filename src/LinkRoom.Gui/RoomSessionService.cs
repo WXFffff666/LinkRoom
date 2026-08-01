@@ -94,6 +94,7 @@ internal sealed class RoomSessionService
     {
         _guardian.Stop();
         await _flow.CancelMonitorAsync();
+        await _vm.Chat.StopAsync();
         _sm.UserDisconnect();
         await _proc.StopAsync();
         EasyTierProcessService.KillOrphanProcesses();

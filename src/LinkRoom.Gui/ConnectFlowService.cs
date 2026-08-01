@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using LinkRoom.Core;
 using LinkRoom.Network;
@@ -185,12 +186,26 @@ internal sealed class ConnectFlowService
             _mon = new CancellationTokenSource();
             _ = MonitorAsync(_mon.Token);
             _vm.L($"已连接 room={room.RoomId} nat={snap.NatType} path={path.Strategy}");
+            StartChat(room.RoomId);
         }
         catch (Exception ex)
         {
             _vm.L($"连接失败: {ex.Message}");
+            // Secure mode must not fail silently (spike: easytier-core rejects
+            // peers that lack secure mode / mismatched pins; 2.6.4 config-file
+            // path needs the persisted keypair). Surface actionable guidance
+            // instead of a bare error string.
+            if (adv.EnableSecureMode)
+            {
+                var hint = "安全模式提示：请确认网络内所有节点均为最新版且已开启安全模式；若填写了共享节点公钥，请确认其正确（锁定失败会被拒绝）。";
+                _vm.L(hint);
+                _vm.StatusDetail = ex.Message + "（" + hint + "）";
+            }
+            else
+            {
+                _vm.StatusDetail = ex.Message;
+            }
             _vm.StatusText = "连接失败";
-            _vm.StatusDetail = ex.Message;
             if (!isReconnect) _sm.UserDisconnect();
             throw;
         }
@@ -280,5 +295,46 @@ internal sealed class ConnectFlowService
         _vm.PortForwardHint = port > 0
             ? $"好友连接: {virtualIp}:{port}"
             : $"虚拟 IP: {virtualIp} — 开放游戏 LAN 后点扫描端口";
+    }
+
+    // Starts the in-room chat once the virtual network is up. Host binds its own
+    // virtual IP (NodeInfo.IPv4); guests connect to the host's virtual IP from
+    // the peer list. Best-effort: chat failure must never break the connection.
+    // StartAsync is restart-safe (stops any previous session first), so this also
+    // runs on reconnect paths.
+    async void StartChat(string roomId)
+    {
+        try
+        {
+            var node = await _cli.GetNodeInfoAsync();
+            var ip = node?.IPv4;
+            if (string.IsNullOrEmpty(ip))
+            {
+                _vm.L("聊天不可用：未获取到虚拟 IP");
+                return;
+            }
+
+            if (_vm.IsHostMode)
+            {
+                await _vm.Chat.StartAsync(isHost: true, ip);
+            }
+            else
+            {
+                var peers = await _cli.GetPeersAsync();
+                var hostIp = peers.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.IPv4))?.IPv4;
+                hostIp = hostIp?.Split('/')[0]; // strip any CIDR suffix
+                if (string.IsNullOrEmpty(hostIp))
+                {
+                    _vm.L("聊天不可用：未找到房主虚拟 IP");
+                    return;
+                }
+                await _vm.Chat.StartAsync(isHost: false, hostIp);
+            }
+            _vm.L($"房间聊天已启动 room={roomId}");
+        }
+        catch (Exception ex)
+        {
+            _vm.L($"聊天启动失败: {ex.Message}");
+        }
     }
 }

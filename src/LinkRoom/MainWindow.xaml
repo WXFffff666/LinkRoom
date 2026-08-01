@@ -119,6 +119,32 @@
                 </StackPanel>
             </Border>
 
+            <!-- In-room chat (virtual network) -->
+            <Expander Header="💬 房间聊天" Margin="0,10,0,0">
+                <StackPanel Margin="0,6,0,0">
+                    <ListBox ItemsSource="{Binding ChatLines}" Height="140" FontSize="11"
+                             BorderBrush="#E5E5EA"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Grid Margin="0,6,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" x:Name="ChatInputBox"
+                                 Text="{Binding ChatInput, UpdateSourceTrigger=PropertyChanged}"
+                                 FontSize="12" Padding="8,6" MaxLength="1024"
+                                 KeyDown="ChatInput_KeyDown" BorderBrush="#E5E5EA"/>
+                        <Button Grid.Column="1" Content="发送" Margin="6,0,0,0" Padding="10,6" FontSize="12"
+                                Command="{Binding SendChatCommand}"/>
+                    </Grid>
+                </StackPanel>
+            </Expander>
+
             <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#8E8E93" HorizontalAlignment="Center"
                        Margin="0,10,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
 

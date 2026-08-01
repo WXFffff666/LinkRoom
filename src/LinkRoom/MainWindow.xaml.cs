@@ -62,6 +62,15 @@ public partial class MainWindow : Window, IMainWindowView
         if (DataContext is Gui.MainViewModel vm) vm.CopyVirtualIpCommand.Execute(null);
     }
 
+    void ChatInput_KeyDown(object s, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter && DataContext is Gui.MainViewModel vm)
+        {
+            vm.SendChatCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
+
     void OpenSettings_Click(object s, RoutedEventArgs e)
     {
         if (DataContext is Gui.MainViewModel vm) { var d = new SettingsWindow(vm) { Owner = this }; d.ShowDialog(); }
