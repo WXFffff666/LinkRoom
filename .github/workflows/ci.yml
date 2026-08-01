@@ -34,6 +34,9 @@ jobs:
       - name: Publish (verify single-file output)
         run: dotnet publish src/LinkRoom/LinkRoom.csproj -c Release -o publish --no-restore
 
+      - name: Run tests
+        run: dotnet test LinkRoom.sln -c Release --no-build
+
       - name: Verify artifact
         shell: pwsh
         run: |
