@@ -44,17 +44,13 @@ public sealed class PathSelectionStrategy
                     break;
             }
 
+            // IPv6 TOML keys are written once by EasyTierConfigBuilder (from advanced + runtime
+            // snapshot) — only keep the strategy suffix here to avoid duplicate TOML keys.
             if (snapshot is { HasIPv6: true, HasIPv4: false } || advanced.Ipv6Only)
-            {
                 rec.Strategy += "+ipv6";
-                rec.TomlFlags.Add("enable_ipv6 = true");
-            }
 
             if (advanced.Ipv6Only)
-            {
                 rec.Strategy += "+ipv6-only";
-                rec.TomlFlags.Add("disable_ipv4 = true");
-            }
         }
 
         if (advanced.IsSharedNodeEnabled)

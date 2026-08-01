@@ -56,24 +56,27 @@ public sealed class EasyTierConfigBuilder
         if (advanced.Mtu is >= 576 and <= 1500)
             sb.AppendLine($"mtu = {advanced.Mtu}");
 
-        if (advanced.PreferIPv6 || advanced.Ipv6Only)
+        // Single source of truth for IPv6 TOML keys (PathSelectionStrategy no longer emits them):
+        // advanced options plus runtime IPv6-only detection, each written exactly once.
+        if (advanced.PreferIPv6 || advanced.Ipv6Only || snapshot is { HasIPv6: true, HasIPv4: false })
             sb.AppendLine("enable_ipv6 = true");
 
         if (advanced.Ipv6Only)
             sb.AppendLine("disable_ipv4 = true");
+
+        // Path flags consolidated in TOML only (no CLI duplication).
+        // Must stay inside [flags] scope: any table header below (e.g. [proxy]) would capture them.
+        if (path != null)
+        {
+            foreach (var flag in path.TomlFlags)
+                sb.AppendLine(flag);
+        }
 
         if (advanced.EnableSocks5 && advanced.Socks5Port is >= 1024 and <= 65535)
         {
             sb.AppendLine();
             sb.AppendLine("[proxy]");
             sb.AppendLine($"socks5_port = {advanced.Socks5Port}");
-        }
-
-        // Path flags consolidated in TOML only (no CLI duplication)
-        if (path != null)
-        {
-            foreach (var flag in path.TomlFlags)
-                sb.AppendLine(flag);
         }
 
         if (snapshot != null)
