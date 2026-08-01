@@ -22,7 +22,7 @@ public sealed class SettingsService
         RegexOptions.Compiled);
 
     static readonly Regex SecretRegex = new(
-        @"(pass(?:word)?[=:\s""]+)(\S+)|(group_secret[=:\s""]+)(\S+)",
+        @"(pass(?:word)?[=:\s""]+)(\S+)|(group_secret[=:\s""]+)(\S+)|(local_private_key[=:\s""]+)(\S+)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public SettingsService() : this(null) { }
@@ -97,6 +97,20 @@ public sealed record AppSettings
     public bool RoomLocked { get; set; }
     public string? CustomStunServers { get; set; }
     public int MaxReconnectAttempts { get; set; } = 5;
+    /// <summary>
+    /// EasyTier secure mode: E2EE per-peer encryption + Noise handshake. All
+    /// nodes in a network must enable it consistently (same LinkRoom/EasyTier
+    /// version), otherwise secure nodes reject non-secure peers. The X25519
+    /// keypair itself is persisted separately (LinkRoomData/config/securemode.key)
+    /// and never stored in settings.
+    /// </summary>
+    public bool EnableSecureMode { get; set; } = true;
+    /// <summary>
+    /// Optional base64 X25519 public key of the shared relay node to pin
+    /// (<c>peer_public_key</c>). Empty = encrypted but not identity-verified
+    /// (the official public.easytier.top node publishes no fixed key).
+    /// </summary>
+    public string? SharedNodePublicKey { get; set; }
     public string? StaticVirtualIp { get; set; }
     public int ListenerPort { get; set; } = 11010;
     public int Mtu { get; set; } = 1380;
@@ -136,6 +150,8 @@ public record AdvancedOptions
     public bool EnableSocks5 { get; init; }
     public int Socks5Port { get; init; } = 1080;
     public bool RoomLocked { get; init; }
+    public bool EnableSecureMode { get; init; } = true;
+    public string? SharedNodePublicKey { get; init; }
 }
 
 public record RoomOptions

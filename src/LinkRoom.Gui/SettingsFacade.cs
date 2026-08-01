@@ -27,6 +27,8 @@ internal sealed class SettingsFacade
         if (!string.IsNullOrEmpty(s.LastRoomId)) _vm.RoomId = s.LastRoomId;
         _vm.IsSharedNodeEnabled = s.IsSharedNodeEnabled;
         _vm.SharedNodeUrls = string.IsNullOrWhiteSpace(s.SharedNodeUrls) ? AppPaths.DefaultSharedNode : s.SharedNodeUrls;
+        _vm.EnableSecureMode = s.EnableSecureMode;
+        _vm.SharedNodePublicKey = s.SharedNodePublicKey ?? "";
         _vm.LogLevel = s.LogLevel ?? "Info";
         _vm.CustomStunServers = s.CustomStunServers ?? "";
         _vm.StaticVirtualIp = s.StaticVirtualIp ?? "";
@@ -62,6 +64,8 @@ internal sealed class SettingsFacade
     {
         IsSharedNodeEnabled = _vm.IsSharedNodeEnabled,
         SharedNodeUrls = _vm.SharedNodeUrls,
+        EnableSecureMode = _vm.EnableSecureMode,
+        SharedNodePublicKey = string.IsNullOrWhiteSpace(_vm.SharedNodePublicKey) ? null : _vm.SharedNodePublicKey.Trim(),
         LogLevel = _vm.LogLevel,
         IsUpnpDisabled = _vm.IsUpnpDisabled,
         CustomStunServers = _vm.CustomStunServers,
@@ -86,6 +90,8 @@ internal sealed class SettingsFacade
         RoomHistory = _vm.RoomHistory.ToList(),
         IsSharedNodeEnabled = _vm.IsSharedNodeEnabled,
         SharedNodeUrls = _vm.SharedNodeUrls,
+        EnableSecureMode = _vm.EnableSecureMode,
+        SharedNodePublicKey = string.IsNullOrWhiteSpace(_vm.SharedNodePublicKey) ? null : _vm.SharedNodePublicKey.Trim(),
         LogLevel = _vm.LogLevel,
         CustomStunServers = _vm.CustomStunServers,
         MaxReconnectAttempts = _vm.MaxReconnectAttempts,

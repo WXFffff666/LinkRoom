@@ -25,6 +25,8 @@ public partial class MainViewModel
     partial void OnUseLanModeChanged(bool value) { AppPaths.Configure(PortableMode); SaveSettingsNow(); }
     partial void OnIsSharedNodeEnabledChanged(bool value) => SaveSettingsNow();
     partial void OnSharedNodeUrlsChanged(string value) => SaveSettingsNow();
+    partial void OnEnableSecureModeChanged(bool value) => SaveSettingsNow();
+    partial void OnSharedNodePublicKeyChanged(string value) => SaveSettingsNow();
     partial void OnCustomStunServersChanged(string value) => SaveSettingsNow();
     partial void OnPreferIPv6Changed(bool value) => SaveSettingsNow();
     partial void OnDarkModeChanged(bool value) => SaveSettingsNow();

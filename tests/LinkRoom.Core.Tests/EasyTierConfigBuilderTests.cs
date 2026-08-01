@@ -208,6 +208,107 @@ public class EasyTierConfigBuilderTests
         Assert.DoesNotContain("[acl.acl_v1", toml);
     }
 
+    [Fact]
+    public async Task EnableSecureMode_True_WritesSecureModeSection()
+    {
+        // Spiked: easytier-core 2.6.4 parses [secure_mode] in TOML, but the
+        // config-file path does NOT auto-generate the keypair — both
+        // local_private_key and local_public_key must be present or every
+        // outbound peer connection fails ("local private key is not set").
+        // See src/LinkRoom.Core/SPIKE-SECUREMODE.md.
+        var advanced = new AdvancedOptions { EnableSecureMode = true };
+        var toml = await BuildTomlForRoomAsync(
+            new RoomOptions { RoomId = "ABC12345" }, advanced);
+
+        Assert.Contains("[secure_mode]", toml);
+        Assert.Contains("enabled = true", toml);
+        Assert.Contains("local_private_key = \"", toml);
+        Assert.Contains("local_public_key = \"", toml);
+    }
+
+    [Fact]
+    public async Task EnableSecureMode_False_OmitsSecureModeSection()
+    {
+        var advanced = new AdvancedOptions { EnableSecureMode = false };
+        var toml = await BuildTomlForRoomAsync(
+            new RoomOptions { RoomId = "ABC12345" }, advanced);
+
+        Assert.DoesNotContain("[secure_mode]", toml);
+        Assert.DoesNotContain("local_private_key", toml);
+    }
+
+    [Fact]
+    public async Task EnableSecureMode_Default_IsTrue()
+    {
+        // LinkRoom defaults to secure mode on; existing users keep it after
+        // upgrade (JSON deserialization leaves absent fields at their
+        // initializer value).
+        var toml = await BuildTomlForRoomAsync(
+            new RoomOptions { RoomId = "ABC12345" }, new AdvancedOptions());
+
+        Assert.Contains("[secure_mode]", toml);
+        Assert.Contains("enabled = true", toml);
+    }
+
+    [Fact]
+    public async Task SharedNodePublicKey_WritesPeerPublicKey()
+    {
+        // Pin the shared relay's X25519 public key: the Noise handshake then
+        // rejects any node that does not present exactly this key.
+        const string pub = "7XgILAJNb7tF5z+9kZZ967XyfauVMhSAZYydu3Ilfx8=";
+        var advanced = new AdvancedOptions
+        {
+            EnableSecureMode = true,
+            IsSharedNodeEnabled = true,
+            SharedNodeUrls = "tcp://relay.example.com:11010",
+            SharedNodePublicKey = pub,
+        };
+        var toml = await BuildTomlForRoomAsync(
+            new RoomOptions { RoomId = "ABC12345" }, advanced);
+
+        Assert.Contains("[[peer]]", toml);
+        Assert.Contains($"peer_public_key = \"{pub}\"", toml);
+        Assert.Contains("uri = \"tcp://relay.example.com:11010\"", toml);
+    }
+
+    [Fact]
+    public async Task SharedNodePublicKey_Empty_OmitsPeerPublicKey()
+    {
+        // Empty = encrypted but not identity-verified (the official
+        // public.easytier.top node publishes no fixed key).
+        var advanced = new AdvancedOptions
+        {
+            EnableSecureMode = true,
+            IsSharedNodeEnabled = true,
+            SharedNodeUrls = "tcp://public.easytier.top:11010",
+        };
+        var toml = await BuildTomlForRoomAsync(
+            new RoomOptions { RoomId = "ABC12345" }, advanced);
+
+        Assert.Contains("[[peer]]", toml);
+        Assert.DoesNotContain("peer_public_key", toml);
+    }
+
+    [Fact]
+    public async Task SecureMode_KeypairIsStableAndValid()
+    {
+        // The persisted keypair must be a real 32-byte X25519 pair (base64)
+        // whose public half derives from the private half; and it must stay
+        // stable across calls (same identity across restarts).
+        SecureModeKeys.ResetCache();
+        var (priv1, pub1) = SecureModeKeys.LoadOrCreate();
+        var (priv2, pub2) = SecureModeKeys.LoadOrCreate();
+
+        Assert.Equal(priv1, priv2);
+        Assert.Equal(pub1, pub2);
+        Assert.Equal(44, priv1.Length); // 32 bytes base64
+        Assert.Equal(44, pub1.Length);
+        Assert.NotEqual(priv1, pub1);
+        Assert.Equal(
+            Convert.ToBase64String(SecureModeKeys.DerivePublicKey(Convert.FromBase64String(priv1))),
+            pub1);
+    }
+
     async Task<string> BuildTomlForRoomAsync(RoomOptions room, AdvancedOptions advanced)
     {
         var cfg = await _builder.BuildAsync(room, null, advanced);

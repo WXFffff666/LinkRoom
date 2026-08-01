@@ -23,6 +23,13 @@
             <TextBox Padding="8,6" Text="{Binding SharedNodeUrls}" IsEnabled="{Binding IsSharedNodeEnabled}"
                      BorderBrush="#E5E5EA" ToolTip="默认 public.easytier.top:11010" Margin="0,0,0,12"/>
 
+            <TextBlock Text="🔒 安全模式" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <CheckBox Content="启用安全模式（端到端加密，同网络节点需一致开启）" IsChecked="{Binding EnableSecureMode}" Margin="0,0,0,4"/>
+            <TextBox Padding="8,6" Text="{Binding SharedNodePublicKey}" IsEnabled="{Binding EnableSecureMode}"
+                     BorderBrush="#E5E5EA" ToolTip="共享节点的 X25519 公钥（base64），来自节点运营方" Margin="0,0,0,4"/>
+            <TextBlock Text="共享节点公钥（可选）· 留空 = 仅加密、不验证共享节点身份；填写后锁定公钥，连接错误节点将被拒绝"
+                       FontSize="10" Foreground="#8E8E93" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
             <TextBlock Text="STUN 服务器" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
             <TextBox Padding="8,6" Text="{Binding CustomStunServers}" BorderBrush="#E5E5EA"
                      ToolTip="host:port 逗号分隔，留空用默认" Margin="0,0,0,4"/>

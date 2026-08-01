@@ -87,6 +87,23 @@ public sealed class EasyTierConfigBuilder
             sb.AppendLine($"socks5_port = {advanced.Socks5Port}");
         }
 
+        if (advanced.EnableSecureMode)
+        {
+            // E2EE per-peer encryption (Noise handshake). easytier-core 2.6.4
+            // does NOT auto-generate the keypair when loading a config file —
+            // only the CLI --secure-mode path does (see SPIKE-SECUREMODE.md) —
+            // so both local_private_key and local_public_key must be written.
+            // The keypair is persisted per install (LinkRoomData/config/securemode.key)
+            // so the identity stays stable across restarts. All nodes in a
+            // network must enable secure mode consistently.
+            var (priv, pub) = SecureModeKeys.LoadOrCreate();
+            sb.AppendLine();
+            sb.AppendLine("[secure_mode]");
+            sb.AppendLine("enabled = true");
+            sb.AppendLine($"local_private_key = \"{priv}\"");
+            sb.AppendLine($"local_public_key = \"{pub}\"");
+        }
+
         if (advanced.IsSharedNodeEnabled && !string.IsNullOrWhiteSpace(advanced.SharedNodeUrls))
         {
             sb.AppendLine();
@@ -97,6 +114,13 @@ public sealed class EasyTierConfigBuilder
                 {
                     sb.AppendLine("[[peer]]");
                     sb.AppendLine($"uri = \"{EscapeToml(trimmed)}\"");
+                    // Optional shared-node identity pin: with secure mode the
+                    // Noise handshake verifies the relay's static public key;
+                    // mismatch = connection rejected. Empty = encrypted but
+                    // not identity-verified (official public node publishes
+                    // no fixed key). Pin makes sense only with secure mode on.
+                    if (!string.IsNullOrWhiteSpace(advanced.SharedNodePublicKey))
+                        sb.AppendLine($"peer_public_key = \"{EscapeToml(advanced.SharedNodePublicKey.Trim())}\"");
                 }
             }
         }

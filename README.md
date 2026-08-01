@@ -14,6 +14,7 @@ Windows 便携式 P2P 游戏联机工具。单 exe 发布，数据存储在 exe 
 - **双模式** — 轻量模式（无虚拟网卡）/ LAN 模式（虚拟网卡 + UDP 广播，MC 自动发现）
 - **NAT 检测** — 并发 STUN 探测，支持自定义/远程 STUN 列表
 - **共享节点中继** — 默认 `tcp://public.easytier.top:11010`
+- **安全模式（E2EE）** — 默认开启：节点间独立协商加密密钥，中继也无法解密；可填写共享节点公钥锁定其身份（`peer_public_key`，填写后连接错误节点会被拒绝）。**注意：同一网络内所有节点必须一致开启安全模式（并保持相同版本），否则安全节点会拒绝未开启安全模式的节点**。公钥留空 = 仅加密、不验证共享节点身份（官方公共节点未发布固定公钥）。详见 `src/LinkRoom.Core/SPIKE-SECUREMODE.md`
 - **UPnP** — 对称型 NAT 可启用端口映射（设置中可配置）
 - **IPv6-only / SOCKS5** — 高级网络选项（设置页）
 
@@ -142,6 +143,10 @@ git tag v1.16.0 && git push origin v1.16.0
 
 - **房间锁定服务端化**：基于 EasyTier ACL（`[acl.acl_v1]` TOML 段，`default_action=2` 拒绝 + `room-owner` group 允许），spike 验证于 `src/LinkRoom.Core/SPIKE-ACL.md`。分享链接新增 `lock=...` 参数携带 256-bit `group_secret`；host 持久化 `RoomId → secret` 映射以支持断线重连
 - 日志脱敏：扩展 `SecretRedactRegex` / `SettingsService.SanitizeLog` 覆盖 `group_secret`，避免 easytier-core 启动 dump 暴露密钥
+
+### v1.16.2
+
+- **EasyTier 安全模式**：默认开启 E2EE（`[secure_mode]` TOML 段 + 每实例持久化 X25519 密钥对），可选 `peer_public_key` 锁定共享节点公钥。spike 验证于 `src/LinkRoom.Core/SPIKE-SECUREMODE.md`（双节点 p2p 成功、错误公钥被拒、非安全节点被拒）。日志脱敏扩展覆盖 `local_private_key`
 
 ### v1.15.0
 
