@@ -4,6 +4,12 @@ Windows 便携式 P2P 游戏联机工具。单 exe 发布，数据存储在 exe 
 
 **当前版本：v1.16.0**
 
+## 多语言（i18n）
+
+- 界面文案通过 resx 提供中英双语：`src/LinkRoom.Core/Resources/Strings.resx`（默认中文）+ `Strings.en.resx`（英文）
+- 设置 →「语言」可选 跟随系统 / 中文 / English（默认跟随系统：系统 UI 为 en\* 时用英文，否则中文），切换后需重启生效
+- **范围说明**：本次迁移覆盖静态 XAML 文本与 MessageBox 静态文案；日志、聊天内容、诊断包保持中文；VM 动态状态文本（StatusText / StatusDetail / ConnectionQuality / ProgressText / 提示等）当前保持中文，留待后续迁移
+
 ## 功能
 
 ### 联机核心

@@ -123,6 +123,11 @@ public sealed record AppSettings
     public bool IsHostMode { get; set; } = true;
     public int? GamePortHint { get; set; }
     /// <summary>
+    /// UI language: null/"system" = follow OS UI culture (en* → English,
+    /// otherwise Chinese), "zh" = Chinese, "en" = English. Applied on startup.
+    /// </summary>
+    public string? Language { get; set; }
+    /// <summary>
     /// Per-room EasyTier ACL group_secret for server-side room lock
     /// (key = RoomId). Set by the host when the lock is enabled; rotated on
     /// every new room creation. Never logged in plaintext.

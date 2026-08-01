@@ -40,6 +40,7 @@ internal sealed class SettingsFacade
         _vm.DarkMode = s.DarkMode;
         _vm.UseLanMode = s.UseLanMode;
         _vm.IsHostMode = s.IsHostMode;
+        _vm.Language = s.Language ?? "system";
         _vm.AutoStart = s.AutoStart;
         _vm.GamePortHint = s.GamePortHint;
         _vm.IsUpnpDisabled = s.IsUpnpDisabled;
@@ -103,6 +104,7 @@ internal sealed class SettingsFacade
         DarkMode = _vm.DarkMode,
         UseLanMode = _vm.UseLanMode,
         IsHostMode = _vm.IsHostMode,
+        Language = _vm.Language,
         AutoStart = _vm.AutoStart,
         GamePortHint = _vm.GamePortHint,
         IsUpnpDisabled = _vm.IsUpnpDisabled,

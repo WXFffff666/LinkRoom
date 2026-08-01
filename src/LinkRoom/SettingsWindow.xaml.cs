@@ -1,5 +1,7 @@
 using System.Windows;
+using System.Windows.Controls;
 using LinkRoom.Core;
+using LinkRoom.Core.Resources;
 using LinkRoom.Gui;
 
 namespace LinkRoom;
@@ -16,6 +18,14 @@ public partial class SettingsWindow : Window
     }
 
     void Close_Click(object s, RoutedEventArgs e) => Close();
+
+    // The Language binding already saved the new value (PropertyChanged);
+    // CultureInfo is read at startup, so the change only takes effect on restart.
+    void Language_SelectionChanged(object s, SelectionChangedEventArgs e)
+    {
+        if (IsLoaded && e.AddedItems.Count > 0)
+            MessageBox.Show(Strings.SettingsLanguageTip, Strings.SettingsTitle);
+    }
 
     void ScanGamePorts_Click(object s, RoutedEventArgs e)
     {

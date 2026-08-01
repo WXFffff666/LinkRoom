@@ -2,15 +2,16 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+        xmlns:res="clr-namespace:LinkRoom.Core.Resources;assembly=LinkRoom.Core"
         ui:WindowHelper.UseModernWindowStyle="True"
-        Title="房间成员" Height="420" Width="520"
+        Title="{x:Static res:Strings.PeerTitle}" Height="420" Width="520"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize">
 
     <Grid Margin="12">
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock Text="👥 房间成员" FontSize="16" FontWeight="Bold" Foreground="#1D1D1F"/>
-            <Button Content="Ping 全部" DockPanel.Dock="Right" Height="28" Padding="8,0" Click="PingAll_Click"/>
+            <TextBlock Text="{x:Static res:Strings.PeerHeader}" FontSize="16" FontWeight="Bold" Foreground="#1D1D1F"/>
+            <Button Content="{x:Static res:Strings.PeerPingAll}" DockPanel.Dock="Right" Height="28" Padding="8,0" Click="PingAll_Click"/>
         </DockPanel>
         <ListBox Grid.Row="1" x:Name="PeerList" BorderBrush="#E5E5EA" Background="White">
             <ListBox.ItemTemplate>
@@ -22,6 +23,6 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <TextBlock Grid.Row="2" x:Name="PeerHint" FontSize="10" Foreground="#8E8E93" Margin="0,8,0,0"
-                   Text="显示 NAT / 延迟 / 路由 cost"/>
+                   Text="{x:Static res:Strings.PeerHint}"/>
     </Grid>
 </Window>

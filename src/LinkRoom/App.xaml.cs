@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using LinkRoom.Core;
+using LinkRoom.Core.Resources;
 using LinkRoom.Gui;
 using LinkRoom.Network;
 using Microsoft.Extensions.Logging;
@@ -18,6 +20,24 @@ public partial class App : Application
     public static string Version { get; } =
         System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.16.0";
 
+    /// <summary>
+    /// Applies the persisted UI language before any window is created:
+    /// "zh" → Chinese, "en" → English, otherwise follow the OS UI culture
+    /// (en* → English, any other → Chinese). Resource lookup needs the
+    /// CurrentUICulture set before XAML parses the first {x:Static} reference.
+    /// </summary>
+    static void ApplyLanguage(string? language)
+    {
+        CultureInfo.CurrentUICulture = language switch
+        {
+            "zh" => new CultureInfo("zh-CN"),
+            "en" => new CultureInfo("en-US"),
+            _ => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en"
+                ? new CultureInfo("en-US")
+                : new CultureInfo("zh-CN"),
+        };
+    }
+
     protected override async void OnStartup(StartupEventArgs e)
     {
         InstallCrashHooks();
@@ -30,7 +50,7 @@ public partial class App : Application
         {
             // async void — never let an exception escape OnStartup (BUG-10 fix).
             System.Diagnostics.Debug.WriteLine(ex);
-            try { MessageBox.Show($"启动失败: {ex.Message}", "LinkRoom"); } catch { }
+            try { MessageBox.Show(string.Format(Strings.MsgStartupFailed, ex.Message), "LinkRoom"); } catch { }
             Shutdown();
         }
     }
@@ -109,15 +129,11 @@ public partial class App : Application
         var gh = _ghAvailable ??= DetectGhCli();
         var body = DiagnosticsService.BuildIssueBody(zipPath, ex, Version, AppPaths.EasyTierVersion);
 
-        var message = "LinkRoom 发生了未处理的异常，已自动导出诊断包：\n\n" +
-                      $"{zipPath ?? "(诊断导出失败)"}\n\n" +
-                      "提交 GitHub Issue 时可附上此诊断包（含日志、脱敏设置、系统信息）。\n\n" +
-                      (gh
-                          ? "是 = 一键创建 GitHub Issue（gh）\n否 = 复制 Issue 正文\n取消 = 关闭"
-                          : "是 = 复制 Issue 正文到剪贴板\n否 = 打开 GitHub 手动提交\n取消 = 关闭");
+        var message = string.Format(Strings.MsgCrashHeader, zipPath ?? Strings.MsgDiagExportFailed) +
+                      (gh ? Strings.MsgCrashOptionsGh : Strings.MsgCrashOptionsNoGh);
 
         MessageBoxResult result;
-        try { result = MessageBox.Show(message, "LinkRoom 崩溃报告", MessageBoxButton.YesNoCancel, MessageBoxImage.Error); }
+        try { result = MessageBox.Show(message, Strings.MsgCrashTitle, MessageBoxButton.YesNoCancel, MessageBoxImage.Error); }
         catch { return; }
 
         if (result == MessageBoxResult.Yes)
@@ -137,7 +153,7 @@ public partial class App : Application
         try
         {
             Clipboard.SetText(body);
-            MessageBox.Show("Issue 正文已复制到剪贴板，请到 GitHub 新建 Issue 并粘贴。", "LinkRoom");
+            MessageBox.Show(Strings.MsgIssueBodyCopied, "LinkRoom");
         }
         catch { }
     }
@@ -168,12 +184,12 @@ public partial class App : Application
             if (p.ExitCode != 0 || string.IsNullOrEmpty(url))
                 throw new Exception(string.IsNullOrEmpty(url) ? "gh 未返回 Issue 链接" : $"gh 退出码 {p.ExitCode}");
             try { Clipboard.SetText(url); } catch { }
-            MessageBox.Show($"Issue 已创建：\n{url}\n\n链接已复制到剪贴板。", "GitHub Issue");
+            MessageBox.Show(string.Format(Strings.MsgIssueCreated, url), "GitHub Issue");
         }
         catch (Exception ghEx)
         {
             CopyIssueBody(body);
-            MessageBox.Show($"gh 创建 Issue 失败：{ghEx.Message}\n\nIssue 正文已复制到剪贴板，请手动提交。", "GitHub Issue");
+            MessageBox.Show(string.Format(Strings.MsgGhIssueFailed, ghEx.Message), "GitHub Issue");
         }
         finally
         {
@@ -190,6 +206,7 @@ public partial class App : Application
         var cli = CliRunner.Parse(e.Args);
         var settingsService = new SettingsService();
         var saved = settingsService.Load();
+        ApplyLanguage(saved.Language);
         AppPaths.Configure(saved.PortableMode);
         AppPaths.EnsureDataDirectories();
         AppPaths.CleanupTempConfigs();
@@ -200,7 +217,7 @@ public partial class App : Application
         try { runtimeDir = RuntimeAssetExtractor.EnsureExtracted(); }
         catch (Exception ex)
         {
-            MessageBox.Show($"EasyTier 运行时解压失败: {ex.Message}", "LinkRoom");
+            MessageBox.Show(string.Format(Strings.MsgRuntimeExtractFailed, ex.Message), "LinkRoom");
             Shutdown();
             return;
         }

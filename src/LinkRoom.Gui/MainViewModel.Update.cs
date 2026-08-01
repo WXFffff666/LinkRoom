@@ -10,6 +10,8 @@ public partial class MainViewModel
     [ObservableProperty] int _socks5Port = 1080;
     [ObservableProperty] string? _skippedUpdateVersion;
     [ObservableProperty] string _updateStatus = "", _pathDiagram = "", _shortLinkText = "";
+    /// <summary>UI language: "system" (follow OS) / "zh" / "en". Applied on next startup.</summary>
+    [ObservableProperty] string _language = "system";
     [ObservableProperty] bool _isProgressVisible;
     [ObservableProperty] double _progressValue;
     [ObservableProperty] string _progressText = "";
@@ -31,4 +33,5 @@ public partial class MainViewModel
     partial void OnPreferIPv6Changed(bool value) => SaveSettingsNow();
     partial void OnDarkModeChanged(bool value) => SaveSettingsNow();
     partial void OnIsHostModeChanged(bool value) => SaveSettingsNow();
+    partial void OnLanguageChanged(string value) => SaveSettingsNow();
 }

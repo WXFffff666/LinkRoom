@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using LinkRoom.Core;
+using LinkRoom.Core.Resources;
 using iNKORE.UI.WPF.Modern;
 
 namespace LinkRoom;
@@ -49,12 +50,12 @@ public partial class MainWindow : Window, IMainWindowView
 
     void CreatedRoomId_DoubleClick(object s, System.Windows.Input.MouseButtonEventArgs e)
     {
-        if (CreatedRoomId.Text.Length > 0) { Clipboard.SetText(CreatedRoomId.Text); MessageBox.Show("已复制房间号"); }
+        if (CreatedRoomId.Text.Length > 0) { Clipboard.SetText(CreatedRoomId.Text); MessageBox.Show(Strings.MsgCopiedRoomId); }
     }
 
     void LinkCode_DoubleClick(object s, System.Windows.Input.MouseButtonEventArgs e)
     {
-        if (LinkCodeText.Text.Length > 0) { Clipboard.SetText(LinkCodeText.Text); MessageBox.Show("已复制联机链接"); }
+        if (LinkCodeText.Text.Length > 0) { Clipboard.SetText(LinkCodeText.Text); MessageBox.Show(Strings.MsgCopiedLinkCode); }
     }
 
     void CopyVirtualIp_Click(object s, RoutedEventArgs e)

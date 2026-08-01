@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MainTitle" xml:space="preserve"><value>LinkRoom</value></data>
+  <data name="MainSettings" xml:space="preserve"><value>⚙ 设置</value></data>
+  <data name="MainRooms" xml:space="preserve"><value>👥 房间</value></data>
+  <data name="MainLog" xml:space="preserve"><value>📋 日志</value></data>
+  <data name="MainUpdate" xml:space="preserve"><value>🔄 更新</value></data>
+  <data name="MainTagline" xml:space="preserve"><value>P2P 游戏联机 · 单文件便携</value></data>
+  <data name="MainHostMode" xml:space="preserve"><value>🏠 房主模式（创建房间并主持游戏）</value></data>
+  <data name="MainRoomLabel" xml:space="preserve"><value>房间号 / 联机码</value></data>
+  <data name="MainRoomToolTip" xml:space="preserve"><value>支持 linkroom:// 链接或 房间号:密码</value></data>
+  <data name="MainPasswordLabel" xml:space="preserve"><value>密码（可选）</value></data>
+  <data name="MainCreateButton" xml:space="preserve"><value>创建房间</value></data>
+  <data name="MainConnectButton" xml:space="preserve"><value>加入房间</value></data>
+  <data name="MainDisconnectButton" xml:space="preserve"><value>断开连接</value></data>
+  <data name="MainRoomCreated" xml:space="preserve"><value>✅ 房间已创建</value></data>
+  <data name="MainCopyRoomIdTip" xml:space="preserve"><value>双击复制房间号</value></data>
+  <data name="MainCopyLinkTip" xml:space="preserve"><value>双击复制联机链接</value></data>
+  <data name="MainCopyLinkButton" xml:space="preserve"><value>复制联机链接</value></data>
+  <data name="MainNatPrefix" xml:space="preserve"><value>NAT: </value></data>
+  <data name="MainPublicSuffix" xml:space="preserve"><value> | 公网: </value></data>
+  <data name="MainVipPrefix" xml:space="preserve"><value>虚拟 IPv4: </value></data>
+  <data name="MainIpv6Suffix" xml:space="preserve"><value> | IPv6: </value></data>
+  <data name="MainCopyVipButton" xml:space="preserve"><value>复制虚拟 IP</value></data>
+  <data name="MainSpeedTestButton" xml:space="preserve"><value>连接测速</value></data>
+  <data name="MainDetectGameButton" xml:space="preserve"><value>🎮 检测游戏</value></data>
+  <data name="MainGameTip" xml:space="preserve"><value>点击设置该游戏端口并一键开房</value></data>
+  <data name="MainChatHeader" xml:space="preserve"><value>💬 房间聊天</value></data>
+  <data name="MainSendButton" xml:space="preserve"><value>发送</value></data>
+  <data name="MainCheckUpdateTip" xml:space="preserve"><value>点击检查更新</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>设置</value></data>
+  <data name="SettingsHeader" xml:space="preserve"><value>⚙ 高级设置</value></data>
+  <data name="SettingsConnectionMode" xml:space="preserve"><value>连接模式</value></data>
+  <data name="SettingsLanMode" xml:space="preserve"><value>LAN 模式（虚拟网卡 + UDP 广播，MC 等自动发现）</value></data>
+  <data name="SettingsDisableUpnp" xml:space="preserve"><value>禁用 UPnP 端口映射（对称型 NAT 可关闭此项并启用 UPnP）</value></data>
+  <data name="SettingsLanModeHint" xml:space="preserve"><value>LAN 模式需管理员权限；轻量模式无需虚拟网卡</value></data>
+  <data name="SettingsListenerPort" xml:space="preserve"><value>监听端口</value></data>
+  <data name="SettingsSharedNode" xml:space="preserve"><value>共享节点（中继）</value></data>
+  <data name="SettingsEnableSharedNode" xml:space="preserve"><value>启用共享节点</value></data>
+  <data name="SettingsSharedNodeTip" xml:space="preserve"><value>默认 public.easytier.top:11010</value></data>
+  <data name="SettingsSecureMode" xml:space="preserve"><value>🔒 安全模式</value></data>
+  <data name="SettingsEnableSecureMode" xml:space="preserve"><value>启用安全模式（端到端加密，同网络节点需一致开启）</value></data>
+  <data name="SettingsSecureKeyTip" xml:space="preserve"><value>共享节点的 X25519 公钥（base64），来自节点运营方</value></data>
+  <data name="SettingsSecureKeyHint" xml:space="preserve"><value>共享节点公钥（可选）· 留空 = 仅加密、不验证共享节点身份；填写后锁定公钥，连接错误节点将被拒绝</value></data>
+  <data name="SettingsStunServers" xml:space="preserve"><value>STUN 服务器</value></data>
+  <data name="SettingsStunTip" xml:space="preserve"><value>host:port 逗号分隔，留空用默认</value></data>
+  <data name="SettingsRefreshStun" xml:space="preserve"><value>🔄 更新远程 STUN 列表</value></data>
+  <data name="SettingsRefreshNetwork" xml:space="preserve"><value>🔄 刷新网络检测缓存</value></data>
+  <data name="SettingsAutoReconnect" xml:space="preserve"><value>自动重连</value></data>
+  <data name="SettingsVipMtuIpv6" xml:space="preserve"><value>虚拟 IP / MTU / IPv6</value></data>
+  <data name="SettingsVipTip" xml:space="preserve"><value>留空 DHCP</value></data>
+  <data name="SettingsPreferIpv6" xml:space="preserve"><value>优先 IPv6</value></data>
+  <data name="SettingsIpv6Only" xml:space="preserve"><value>仅 IPv6 模式</value></data>
+  <data name="SettingsEnableSocks5" xml:space="preserve"><value>启用 SOCKS5 代理</value></data>
+  <data name="SettingsSocks5Tip" xml:space="preserve"><value>SOCKS5 端口</value></data>
+  <data name="SettingsRoomLocked" xml:space="preserve"><value>锁定房间（仅房主可加入新成员）</value></data>
+  <data name="SettingsUpdate" xml:space="preserve"><value>更新</value></data>
+  <data name="SettingsAutoCheckUpdate" xml:space="preserve"><value>启动时自动检查 GitHub 更新</value></data>
+  <data name="SettingsCheckUpdateNow" xml:space="preserve"><value>🔄 立即检查更新</value></data>
+  <data name="SettingsConfigManagement" xml:space="preserve"><value>配置管理</value></data>
+  <data name="SettingsExportConfig" xml:space="preserve"><value>📤 导出配置</value></data>
+  <data name="SettingsImportConfig" xml:space="preserve"><value>📥 导入配置</value></data>
+  <data name="SettingsDataStorage" xml:space="preserve"><value>数据存储</value></data>
+  <data name="SettingsPortableMode" xml:space="preserve"><value>便携模式（LinkRoomData/ 在 exe 同目录）</value></data>
+  <data name="SettingsAutoStart" xml:space="preserve"><value>开机自启</value></data>
+  <data name="SettingsDarkMode" xml:space="preserve"><value>暗色模式</value></data>
+  <data name="SettingsLanguage" xml:space="preserve"><value>语言</value></data>
+  <data name="SettingsLanguageTip" xml:space="preserve"><value>切换语言后需重启生效</value></data>
+  <data name="LangSystem" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="LangZh" xml:space="preserve"><value>中文</value></data>
+  <data name="LangEn" xml:space="preserve"><value>English</value></data>
+  <data name="SettingsGamePorts" xml:space="preserve"><value>🎮 游戏端口</value></data>
+  <data name="SettingsScanGamePorts" xml:space="preserve"><value>🔍 扫描本地游戏端口</value></data>
+  <data name="SettingsNatTest" xml:space="preserve"><value>🧪 NAT 检测</value></data>
+  <data name="SettingsTestNat" xml:space="preserve"><value>🔍 立即检测 NAT</value></data>
+  <data name="SettingsSelfCheck" xml:space="preserve"><value>🔍 自检</value></data>
+  <data name="SettingsExportDiag" xml:space="preserve"><value>📦 导出诊断包</value></data>
+  <data name="SettingsWebPanel" xml:space="preserve"><value>🌐 Web 面板</value></data>
+  <data name="SettingsScanMods" xml:space="preserve"><value>🎮 扫描 MC Mod</value></data>
+  <data name="SettingsEtVersion" xml:space="preserve"><value>📦 EasyTier 版本</value></data>
+  <data name="SettingsPlugins" xml:space="preserve"><value>🧩 已加载插件</value></data>
+  <data name="SettingsClose" xml:space="preserve"><value>关闭</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>欢迎使用 LinkRoom</value></data>
+  <data name="WizardStep1Title" xml:space="preserve"><value>步骤 1/3 — 选择模式</value></data>
+  <data name="WizardStep1Desc" xml:space="preserve"><value>选择适合你的联机模式</value></data>
+  <data name="WizardLanMode" xml:space="preserve"><value>LAN 模式（MC 等自动发现，需管理员）</value></data>
+  <data name="WizardAutoUpdate" xml:space="preserve"><value>启动时自动检查更新</value></data>
+  <data name="WizardPortable" xml:space="preserve"><value>便携模式（数据存 exe 同目录）</value></data>
+  <data name="WizardSkip" xml:space="preserve"><value>跳过</value></data>
+  <data name="WizardNext" xml:space="preserve"><value>下一步</value></data>
+  <data name="PeerTitle" xml:space="preserve"><value>房间成员</value></data>
+  <data name="PeerHeader" xml:space="preserve"><value>👥 房间成员</value></data>
+  <data name="PeerPingAll" xml:space="preserve"><value>Ping 全部</value></data>
+  <data name="PeerHint" xml:space="preserve"><value>显示 NAT / 延迟 / 路由 cost</value></data>
+  <data name="LogTitle" xml:space="preserve"><value>日志</value></data>
+  <data name="LogHeader" xml:space="preserve"><value>📋 运行日志</value></data>
+  <data name="LogClear" xml:space="preserve"><value>清空</value></data>
+  <data name="LogCopy" xml:space="preserve"><value>复制</value></data>
+  <data name="LogClose" xml:space="preserve"><value>关闭</value></data>
+  <data name="MsgCopiedRoomId" xml:space="preserve"><value>已复制房间号</value></data>
+  <data name="MsgCopiedLinkCode" xml:space="preserve"><value>已复制联机链接</value></data>
+  <data name="MsgStartupFailed" xml:space="preserve"><value>启动失败: {0}</value></data>
+  <data name="MsgCrashTitle" xml:space="preserve"><value>LinkRoom 崩溃报告</value></data>
+  <data name="MsgCrashHeader" xml:space="preserve"><value>LinkRoom 发生了未处理的异常，已自动导出诊断包：
+
+{0}
+
+提交 GitHub Issue 时可附上此诊断包（含日志、脱敏设置、系统信息）。
+
+</value></data>
+  <data name="MsgCrashOptionsGh" xml:space="preserve"><value>是 = 一键创建 GitHub Issue（gh）
+否 = 复制 Issue 正文
+取消 = 关闭</value></data>
+  <data name="MsgCrashOptionsNoGh" xml:space="preserve"><value>是 = 复制 Issue 正文到剪贴板
+否 = 打开 GitHub 手动提交
+取消 = 关闭</value></data>
+  <data name="MsgDiagExportFailed" xml:space="preserve"><value>(诊断导出失败)</value></data>
+  <data name="MsgIssueBodyCopied" xml:space="preserve"><value>Issue 正文已复制到剪贴板，请到 GitHub 新建 Issue 并粘贴。</value></data>
+  <data name="MsgIssueCreated" xml:space="preserve"><value>Issue 已创建：
+{0}
+
+链接已复制到剪贴板。</value></data>
+  <data name="MsgGhIssueFailed" xml:space="preserve"><value>gh 创建 Issue 失败：{0}
+
+Issue 正文已复制到剪贴板，请手动提交。</value></data>
+  <data name="MsgRuntimeExtractFailed" xml:space="preserve"><value>EasyTier 运行时解压失败: {0}</value></data>
+  <data name="MsgUpdateFoundTemplate" xml:space="preserve"><value>发现新版本 {0}
+当前: v{1}
+大小: {2:F1} MB</value></data>
+  <data name="MsgUpdateIncremental" xml:space="preserve"><value>
+
+✓ 可增量更新（保留 EasyTier 运行时）</value></data>
+  <data name="MsgUpdateOptions" xml:space="preserve"><value>
+
+是=立即更新 | 否=跳过此版本 | 取消=稍后</value></data>
+  <data name="MsgUpdateTitle" xml:space="preserve"><value>LinkRoom 更新</value></data>
+  <data name="MsgUpdateFailed" xml:space="preserve"><value>更新失败: {0}</value></data>
+</root>

@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using LinkRoom.Core;
+using LinkRoom.Core.Resources;
 using LinkRoom.Network;
 using Microsoft.Win32;
 
@@ -79,16 +80,17 @@ internal sealed class UpdateAndToolsService
 
     async Task PromptAndApplyUpdateAsync(UpdateInfo info, bool isStartup = false)
     {
-        var msg = $"发现新版本 {info.Tag}\n当前: v{UpdateService.CurrentVersion}\n大小: {info.SizeBytes / 1024 / 1024:F1} MB";
+        var msg = string.Format(Strings.MsgUpdateFoundTemplate,
+            info.Tag, UpdateService.CurrentVersion, info.SizeBytes / 1024d / 1024d);
         if (!string.IsNullOrWhiteSpace(info.ReleaseNotes))
             msg += $"\n\n{info.ReleaseNotes[..Math.Min(200, info.ReleaseNotes.Length)]}...";
 
         var incremental = _update.IsIncrementalUpdate(info);
         if (incremental)
-            msg += "\n\n✓ 可增量更新（保留 EasyTier 运行时）";
+            msg += Strings.MsgUpdateIncremental;
 
-        var choice = MessageBox.Show(msg + "\n\n是=立即更新 | 否=跳过此版本 | 取消=稍后",
-            "LinkRoom 更新", MessageBoxButton.YesNoCancel, MessageBoxImage.Information);
+        var choice = MessageBox.Show(msg + Strings.MsgUpdateOptions,
+            Strings.MsgUpdateTitle, MessageBoxButton.YesNoCancel, MessageBoxImage.Information);
 
         if (choice == MessageBoxResult.No)
         {
@@ -138,7 +140,7 @@ internal sealed class UpdateAndToolsService
         {
             _vm.UpdateStatus = "更新失败";
             _vm.L($"更新失败: {ex.Message}");
-            MessageBox.Show($"更新失败: {ex.Message}", "LinkRoom");
+            MessageBox.Show(string.Format(Strings.MsgUpdateFailed, ex.Message), "LinkRoom");
         }
         finally
         {

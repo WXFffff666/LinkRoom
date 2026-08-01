@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MainTitle" xml:space="preserve"><value>LinkRoom</value></data>
+  <data name="MainSettings" xml:space="preserve"><value>⚙ Settings</value></data>
+  <data name="MainRooms" xml:space="preserve"><value>👥 Room</value></data>
+  <data name="MainLog" xml:space="preserve"><value>📋 Log</value></data>
+  <data name="MainUpdate" xml:space="preserve"><value>🔄 Update</value></data>
+  <data name="MainTagline" xml:space="preserve"><value>P2P Game LAN · Single-File Portable</value></data>
+  <data name="MainHostMode" xml:space="preserve"><value>🏠 Host Mode (create a room and host the game)</value></data>
+  <data name="MainRoomLabel" xml:space="preserve"><value>Room ID / Link Code</value></data>
+  <data name="MainRoomToolTip" xml:space="preserve"><value>Supports linkroom:// links or RoomID:password</value></data>
+  <data name="MainPasswordLabel" xml:space="preserve"><value>Password (optional)</value></data>
+  <data name="MainCreateButton" xml:space="preserve"><value>Create Room</value></data>
+  <data name="MainConnectButton" xml:space="preserve"><value>Join Room</value></data>
+  <data name="MainDisconnectButton" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="MainRoomCreated" xml:space="preserve"><value>✅ Room Created</value></data>
+  <data name="MainCopyRoomIdTip" xml:space="preserve"><value>Double-click to copy room ID</value></data>
+  <data name="MainCopyLinkTip" xml:space="preserve"><value>Double-click to copy link code</value></data>
+  <data name="MainCopyLinkButton" xml:space="preserve"><value>Copy Link Code</value></data>
+  <data name="MainNatPrefix" xml:space="preserve"><value>NAT: </value></data>
+  <data name="MainPublicSuffix" xml:space="preserve"><value> | Public: </value></data>
+  <data name="MainVipPrefix" xml:space="preserve"><value>Virtual IPv4: </value></data>
+  <data name="MainIpv6Suffix" xml:space="preserve"><value> | IPv6: </value></data>
+  <data name="MainCopyVipButton" xml:space="preserve"><value>Copy Virtual IP</value></data>
+  <data name="MainSpeedTestButton" xml:space="preserve"><value>Speed Test</value></data>
+  <data name="MainDetectGameButton" xml:space="preserve"><value>🎮 Detect Game</value></data>
+  <data name="MainGameTip" xml:space="preserve"><value>Click to set this game's port and host with one click</value></data>
+  <data name="MainChatHeader" xml:space="preserve"><value>💬 Room Chat</value></data>
+  <data name="MainSendButton" xml:space="preserve"><value>Send</value></data>
+  <data name="MainCheckUpdateTip" xml:space="preserve"><value>Click to check for updates</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsHeader" xml:space="preserve"><value>⚙ Advanced Settings</value></data>
+  <data name="SettingsConnectionMode" xml:space="preserve"><value>Connection Mode</value></data>
+  <data name="SettingsLanMode" xml:space="preserve"><value>LAN Mode (virtual NIC + UDP broadcast, auto-discovery for MC etc.)</value></data>
+  <data name="SettingsDisableUpnp" xml:space="preserve"><value>Disable UPnP port mapping (symmetrical NAT: turn this off and enable UPnP)</value></data>
+  <data name="SettingsLanModeHint" xml:space="preserve"><value>LAN Mode requires administrator; Lightweight Mode needs no virtual NIC</value></data>
+  <data name="SettingsListenerPort" xml:space="preserve"><value>Listener Port</value></data>
+  <data name="SettingsSharedNode" xml:space="preserve"><value>Shared Node (Relay)</value></data>
+  <data name="SettingsEnableSharedNode" xml:space="preserve"><value>Enable Shared Node</value></data>
+  <data name="SettingsSharedNodeTip" xml:space="preserve"><value>Default public.easytier.top:11010</value></data>
+  <data name="SettingsSecureMode" xml:space="preserve"><value>🔒 Secure Mode</value></data>
+  <data name="SettingsEnableSecureMode" xml:space="preserve"><value>Enable Secure Mode (end-to-end encryption; all nodes on the network must enable it consistently)</value></data>
+  <data name="SettingsSecureKeyTip" xml:space="preserve"><value>Shared node's X25519 public key (base64), from the node operator</value></data>
+  <data name="SettingsSecureKeyHint" xml:space="preserve"><value>Shared Node Public Key (optional) · empty = encrypted but not identity-verified; filled = key pinned, wrong nodes will be rejected</value></data>
+  <data name="SettingsStunServers" xml:space="preserve"><value>STUN Servers</value></data>
+  <data name="SettingsStunTip" xml:space="preserve"><value>host:port, comma-separated; empty for defaults</value></data>
+  <data name="SettingsRefreshStun" xml:space="preserve"><value>🔄 Refresh Remote STUN List</value></data>
+  <data name="SettingsRefreshNetwork" xml:space="preserve"><value>🔄 Refresh Network Detection Cache</value></data>
+  <data name="SettingsAutoReconnect" xml:space="preserve"><value>Auto Reconnect</value></data>
+  <data name="SettingsVipMtuIpv6" xml:space="preserve"><value>Virtual IP / MTU / IPv6</value></data>
+  <data name="SettingsVipTip" xml:space="preserve"><value>Empty = DHCP</value></data>
+  <data name="SettingsPreferIpv6" xml:space="preserve"><value>Prefer IPv6</value></data>
+  <data name="SettingsIpv6Only" xml:space="preserve"><value>IPv6-Only Mode</value></data>
+  <data name="SettingsEnableSocks5" xml:space="preserve"><value>Enable SOCKS5 Proxy</value></data>
+  <data name="SettingsSocks5Tip" xml:space="preserve"><value>SOCKS5 Port</value></data>
+  <data name="SettingsRoomLocked" xml:space="preserve"><value>Lock Room (only the host can accept new members)</value></data>
+  <data name="SettingsUpdate" xml:space="preserve"><value>Update</value></data>
+  <data name="SettingsAutoCheckUpdate" xml:space="preserve"><value>Check for GitHub updates on startup</value></data>
+  <data name="SettingsCheckUpdateNow" xml:space="preserve"><value>🔄 Check for Updates Now</value></data>
+  <data name="SettingsConfigManagement" xml:space="preserve"><value>Configuration</value></data>
+  <data name="SettingsExportConfig" xml:space="preserve"><value>📤 Export Config</value></data>
+  <data name="SettingsImportConfig" xml:space="preserve"><value>📥 Import Config</value></data>
+  <data name="SettingsDataStorage" xml:space="preserve"><value>Data Storage</value></data>
+  <data name="SettingsPortableMode" xml:space="preserve"><value>Portable Mode (LinkRoomData/ next to the exe)</value></data>
+  <data name="SettingsAutoStart" xml:space="preserve"><value>Start on Boot</value></data>
+  <data name="SettingsDarkMode" xml:space="preserve"><value>Dark Mode</value></data>
+  <data name="SettingsLanguage" xml:space="preserve"><value>Language</value></data>
+  <data name="SettingsLanguageTip" xml:space="preserve"><value>A restart is required for the new language to take effect</value></data>
+  <data name="LangSystem" xml:space="preserve"><value>Follow System</value></data>
+  <data name="LangZh" xml:space="preserve"><value>中文</value></data>
+  <data name="LangEn" xml:space="preserve"><value>English</value></data>
+  <data name="SettingsGamePorts" xml:space="preserve"><value>🎮 Game Ports</value></data>
+  <data name="SettingsScanGamePorts" xml:space="preserve"><value>🔍 Scan Local Game Ports</value></data>
+  <data name="SettingsNatTest" xml:space="preserve"><value>🧪 NAT Test</value></data>
+  <data name="SettingsTestNat" xml:space="preserve"><value>🔍 Test NAT Now</value></data>
+  <data name="SettingsSelfCheck" xml:space="preserve"><value>🔍 Self Check</value></data>
+  <data name="SettingsExportDiag" xml:space="preserve"><value>📦 Export Diagnostics</value></data>
+  <data name="SettingsWebPanel" xml:space="preserve"><value>🌐 Web Panel</value></data>
+  <data name="SettingsScanMods" xml:space="preserve"><value>🎮 Scan MC Mods</value></data>
+  <data name="SettingsEtVersion" xml:space="preserve"><value>📦 EasyTier Version</value></data>
+  <data name="SettingsPlugins" xml:space="preserve"><value>🧩 Loaded Plugins</value></data>
+  <data name="SettingsClose" xml:space="preserve"><value>Close</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>Welcome to LinkRoom</value></data>
+  <data name="WizardStep1Title" xml:space="preserve"><value>Step 1/3 — Choose a Mode</value></data>
+  <data name="WizardStep1Desc" xml:space="preserve"><value>Choose the mode that suits you</value></data>
+  <data name="WizardLanMode" xml:space="preserve"><value>LAN Mode (auto-discovery for MC etc., requires administrator)</value></data>
+  <data name="WizardAutoUpdate" xml:space="preserve"><value>Check for updates on startup</value></data>
+  <data name="WizardPortable" xml:space="preserve"><value>Portable Mode (data stored next to the exe)</value></data>
+  <data name="WizardSkip" xml:space="preserve"><value>Skip</value></data>
+  <data name="WizardNext" xml:space="preserve"><value>Next</value></data>
+  <data name="PeerTitle" xml:space="preserve"><value>Room Members</value></data>
+  <data name="PeerHeader" xml:space="preserve"><value>👥 Room Members</value></data>
+  <data name="PeerPingAll" xml:space="preserve"><value>Ping All</value></data>
+  <data name="PeerHint" xml:space="preserve"><value>Shows NAT / latency / route cost</value></data>
+  <data name="LogTitle" xml:space="preserve"><value>Log</value></data>
+  <data name="LogHeader" xml:space="preserve"><value>📋 Run Log</value></data>
+  <data name="LogClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="LogCopy" xml:space="preserve"><value>Copy</value></data>
+  <data name="LogClose" xml:space="preserve"><value>Close</value></data>
+  <data name="MsgCopiedRoomId" xml:space="preserve"><value>Room ID copied</value></data>
+  <data name="MsgCopiedLinkCode" xml:space="preserve"><value>Link code copied</value></data>
+  <data name="MsgStartupFailed" xml:space="preserve"><value>Startup failed: {0}</value></data>
+  <data name="MsgCrashTitle" xml:space="preserve"><value>LinkRoom Crash Report</value></data>
+  <data name="MsgCrashHeader" xml:space="preserve"><value>LinkRoom hit an unhandled exception and automatically exported a diagnostic package:
+
+{0}
+
+Attach it when filing a GitHub Issue (logs, sanitized settings, system info).
+
+</value></data>
+  <data name="MsgCrashOptionsGh" xml:space="preserve"><value>Yes = create a GitHub Issue in one click (gh)
+No = copy Issue body
+Cancel = close</value></data>
+  <data name="MsgCrashOptionsNoGh" xml:space="preserve"><value>Yes = copy Issue body to clipboard
+No = open GitHub to file manually
+Cancel = close</value></data>
+  <data name="MsgDiagExportFailed" xml:space="preserve"><value>(diagnostics export failed)</value></data>
+  <data name="MsgIssueBodyCopied" xml:space="preserve"><value>Issue body copied to clipboard. Please create a new Issue on GitHub and paste it.</value></data>
+  <data name="MsgIssueCreated" xml:space="preserve"><value>Issue created:
+{0}
+
+Link copied to clipboard.</value></data>
+  <data name="MsgGhIssueFailed" xml:space="preserve"><value>gh failed to create the Issue: {0}
+
+Issue body copied to clipboard — please file it manually.</value></data>
+  <data name="MsgRuntimeExtractFailed" xml:space="preserve"><value>Failed to extract EasyTier runtime: {0}</value></data>
+  <data name="MsgUpdateFoundTemplate" xml:space="preserve"><value>New version {0} available
+Current: v{1}
+Size: {2:F1} MB</value></data>
+  <data name="MsgUpdateIncremental" xml:space="preserve"><value>
+
+✓ Incremental update available (keeps EasyTier runtime)</value></data>
+  <data name="MsgUpdateOptions" xml:space="preserve"><value>
+
+Yes = update now | No = skip this version | Cancel = remind later</value></data>
+  <data name="MsgUpdateTitle" xml:space="preserve"><value>LinkRoom Update</value></data>
+  <data name="MsgUpdateFailed" xml:space="preserve"><value>Update failed: {0}</value></data>
+</root>
