@@ -69,9 +69,11 @@ jobs:
           $name = "LinkRoom-$tag-win-x64.exe"
           Copy-Item publish/LinkRoom.exe "publish/$name"
           $size = [math]::Round((Get-Item "publish/$name").Length / 1MB, 2)
+          $hash = (Get-FileHash "publish/$name" -Algorithm SHA256).Hash
+          "$hash  $name" | Set-Content -Path "publish/$name.sha256" -Encoding ascii -NoNewline
           "artifact=$name" >> $env:GITHUB_OUTPUT
           "size_mb=$size" >> $env:GITHUB_OUTPUT
-          Write-Host "Packaged $name ($size MB)"
+          Write-Host "Packaged $name ($size MB, SHA256 $hash)"
 
       - name: Generate release notes body
         shell: pwsh
@@ -114,6 +116,7 @@ jobs:
           files: |
             publish/LinkRoom.exe
             publish/LinkRoom-${{ steps.version.outputs.tag }}-win-x64.exe
+            publish/LinkRoom-${{ steps.version.outputs.tag }}-win-x64.exe.sha256
           draft: false
           prerelease: ${{ contains(steps.version.outputs.tag, '-') }}
           generate_release_notes: true

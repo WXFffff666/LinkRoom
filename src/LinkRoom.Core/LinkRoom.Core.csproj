@@ -18,4 +18,8 @@
     <ProjectReference Include="..\LinkRoom.Network\LinkRoom.Network.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="LinkRoom.Core.Tests" />
+  </ItemGroup>
+
 </Project>
