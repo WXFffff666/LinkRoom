@@ -22,7 +22,7 @@ public sealed class SettingsService
         RegexOptions.Compiled);
 
     static readonly Regex SecretRegex = new(
-        @"(pass(?:word)?[=:\s""]+)(\S+)",
+        @"(pass(?:word)?[=:\s""]+)(\S+)|(group_secret[=:\s""]+)(\S+)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public SettingsService() : this(null) { }
@@ -108,6 +108,12 @@ public sealed record AppSettings
     public bool AutoStart { get; set; }
     public bool IsHostMode { get; set; } = true;
     public int? GamePortHint { get; set; }
+    /// <summary>
+    /// Per-room EasyTier ACL group_secret for server-side room lock
+    /// (key = RoomId). Set by the host when the lock is enabled; rotated on
+    /// every new room creation. Never logged in plaintext.
+    /// </summary>
+    public Dictionary<string, string>? RoomLockSecrets { get; set; }
 }
 
 public record AdvancedOptions
@@ -136,4 +142,11 @@ public record RoomOptions
 {
     public string RoomId { get; init; } = "";
     public string Password { get; init; } = "";
+    /// <summary>
+    /// EasyTier ACL group_secret for server-side room lock. Null when the room
+    /// is not locked. When set, the [acl.acl_v1] section is written into the
+    /// generated TOML. MUST be identical on every node in the network — see
+    /// <c>src/LinkRoom.Core/SPIKE-ACL.md</c> and README "房间锁定" section.
+    /// </summary>
+    public string? AclSecret { get; init; }
 }

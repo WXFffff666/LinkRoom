@@ -101,6 +101,47 @@ public sealed class EasyTierConfigBuilder
             }
         }
 
+        // Server-side room lock via EasyTier ACL (zero-trust group filter).
+        // Spiked: easytier-core parses [acl.acl_v1] in TOML identically to YAML
+        // and logs "ACL rules built: N inbound" + "ACL rules hot reloaded" on
+        // startup — see src/LinkRoom.Core/SPIKE-ACL.md.
+        // Group "room-owner" is the only allowed source/dest; default_action=2
+        // denies everything else. The group_secret MUST match across all nodes;
+        // the host embeds it in the linkroom:// link (LinkCodeService.Encode) so
+        // guests pick it up automatically.
+        if (advanced.RoomLocked && !string.IsNullOrEmpty(room.AclSecret))
+        {
+            sb.AppendLine();
+            sb.AppendLine("# --- server-side room lock (EasyTier ACL) ---");
+            sb.AppendLine("[acl.acl_v1.group]");
+            sb.AppendLine("members = [\"room-owner\"]");
+            sb.AppendLine();
+            sb.AppendLine("[[acl.acl_v1.group.declares]]");
+            sb.AppendLine("group_name = \"room-owner\"");
+            sb.AppendLine($"group_secret = \"{EscapeToml(room.AclSecret)}\"");
+            sb.AppendLine();
+            sb.AppendLine("[[acl.acl_v1.group.declares]]");
+            sb.AppendLine("group_name = \"guest\"");
+            sb.AppendLine($"group_secret = \"{EscapeToml(room.AclSecret)}\"");
+            sb.AppendLine();
+            sb.AppendLine("[[acl.acl_v1.chains]]");
+            sb.AppendLine("name = \"room_lock_inbound\"");
+            sb.AppendLine("chain_type = 1");
+            sb.AppendLine("description = \"deny non-room-owner peers\"");
+            sb.AppendLine("enabled = true");
+            sb.AppendLine("default_action = 2");
+            sb.AppendLine();
+            sb.AppendLine("[[acl.acl_v1.chains.rules]]");
+            sb.AppendLine("name = \"allow_room_owner\"");
+            sb.AppendLine("description = \"allow room-owner to room-owner\"");
+            sb.AppendLine("priority = 1000");
+            sb.AppendLine("action = 1");
+            sb.AppendLine("source_groups = [\"room-owner\"]");
+            sb.AppendLine("destination_groups = [\"room-owner\"]");
+            sb.AppendLine("protocol = 5");
+            sb.AppendLine("enabled = true");
+        }
+
         return sb.ToString();
     }
 

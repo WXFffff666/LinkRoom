@@ -88,6 +88,9 @@ public static class CliRunner
                         var decoded = LinkCodeService.Decode(args[i]);
                         room = decoded.RoomId;
                         pass ??= decoded.Password;
+                        // CLI join doesn't carry the lock secret to the headless
+                        // core process — headless users must use the GUI or set
+                        // the secret in their own config if they need ACL.
                         join = true;
                     }
                     else if (room == null && a.Length >= 3) room = args[i];

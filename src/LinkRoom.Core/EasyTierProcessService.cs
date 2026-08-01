@@ -17,9 +17,15 @@ public sealed class EasyTierProcessService : IProcessHealth, IDisposable
     private readonly ILogger<EasyTierProcessService> _logger;
     private bool _disposed;
 
-    // Regex to redact --network-secret or network_secret values from logs
+    // Regex to redact --network-secret, network_secret, and group_secret
+    // values from easytier-core stdout/stderr (the core dumps its parsed
+    // config at startup, including the ACL group_secret in plaintext).
+    // Each branch captures the prefix and the value in separate groups so the
+    // replacement can keep the prefix and swap the value for [REDACTED].
     private static readonly Regex SecretRedactRegex = new(
-        @"(--network-secret\s+)(\S+)|(network_secret\s*=\s*""?)([^""\s]+)",
+        @"(--network-secret\s+)(\S+)" +
+        @"|(network_secret\s*=\s*""?)([^""\s]+)" +
+        @"|(group_secret\s*=\s*"")([^""]*)("")",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     /// <summary>
@@ -153,13 +159,15 @@ public sealed class EasyTierProcessService : IProcessHealth, IDisposable
     {
         if (data == null) return;
 
-        // Redact network secret from logs
+        // Redact network/ACL secrets from logs
         var sanitized = SecretRedactRegex.Replace(data, match =>
         {
             if (match.Groups[1].Success)
                 return $"{match.Groups[1].Value}[REDACTED]";
             if (match.Groups[3].Success)
                 return $"{match.Groups[3].Value}[REDACTED]";
+            if (match.Groups[5].Success)
+                return $"{match.Groups[5].Value}[REDACTED]{match.Groups[7].Value}";
             return match.Value;
         });
 

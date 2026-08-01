@@ -39,6 +39,12 @@ public partial class MainViewModel : ObservableObject
     IMainWindowView? _win;
     EasyTierLaunchConfig? _acfg;
     RoomOptions? _lastRoom;
+    // Current session's room-lock group_secret (server-side ACL). Set by
+    // CreateRoomAsync (host generates fresh) or ConnectAsync (guest reads from
+    // the share link). Persisted in AppSettings.RoomLockSecrets[RoomId] so the
+    // host re-uses the same secret on reconnects; rotated when the host
+    // toggles the lock off and on again.
+    string? _lockSecret;
 
     [ObservableProperty] string _roomId = "", _password = "", _connState = "Idle", _connType = "";
     [ObservableProperty] string _natType = "", _ipv4 = "", _ipv6 = "", _virtualIpv4 = "", _virtualIpv6 = "";
@@ -232,6 +238,12 @@ public partial class MainViewModel : ObservableObject
         return sb.ToString();
     }
 
+    // 256-bit per-room ACL group_secret, base64-encoded for the TOML/URI.
+    // Must be identical on every node in the network — EasyTier uses it to
+    // authenticate group membership; mismatched secrets fail validation and
+    // the host's default-deny inbound chain drops the peer. Never log this.
+    static string GenLockSecret() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
     AppSettings SaveSettings() => new()
     {
         LastRoomId = RoomId.Trim(),
@@ -259,7 +271,23 @@ public partial class MainViewModel : ObservableObject
         EnableSocks5 = EnableSocks5,
         Socks5Port = Socks5Port,
         RoomLocked = RoomLocked,
+        // Persist the room → lock secret map so the host re-uses the same
+        // group_secret on reconnects. Keep any prior entries (other rooms)
+        // and only refresh the entry for the current room.
+        RoomLockSecrets = _lockSecret is null
+            ? _ss.Load().RoomLockSecrets
+            : MergeLockSecret(_ss.Load().RoomLockSecrets, RoomId.Trim(), _lockSecret),
     };
+
+    static Dictionary<string, string>? MergeLockSecret(
+        Dictionary<string, string>? existing, string roomId, string secret)
+    {
+        var dict = existing is null
+            ? new Dictionary<string, string>(StringComparer.Ordinal)
+            : new Dictionary<string, string>(existing, StringComparer.Ordinal);
+        dict[roomId] = secret;
+        return dict;
+    }
 
     async Task ConnectInternalAsync(RoomOptions room, bool isReconnect = false)
     {
@@ -387,18 +415,26 @@ public partial class MainViewModel : ObservableObject
             RoomId = id;
             Password = pw;
             L($"创建房间: {id}");
-            var link = LinkCodeService.Encode(id, pw, GamePortHint);
+            // Room lock (server-side via EasyTier ACL): generate a per-room
+            // group_secret and embed it in the share link so guests can
+            // authenticate against the host's inbound ACL chain. The secret is
+            // persisted in AppSettings.RoomLockSecrets[RoomId] so the host
+            // re-uses the same secret across reconnects (otherwise the lock
+            // would rotate and previously-joined guests would be denied).
+            var lockSecret = RoomLocked ? GenLockSecret() : null;
+            if (lockSecret != null) _lockSecret = lockSecret;
+            var link = LinkCodeService.Encode(id, pw, GamePortHint, lockSecret);
             ShortLinkText = ShortLinkService.FormatShare(id, pw, GamePortHint);
             _win?.ShowCreatedRoom(id, link, link);
 
             try
             {
-                Clipboard.SetText(LinkCodeService.ToClipboardText(id, pw, GamePortHint));
+                Clipboard.SetText(LinkCodeService.ToClipboardText(id, pw, GamePortHint, lockSecret));
                 L("联机信息已复制到剪贴板");
             }
             catch { }
 
-            await ConnectInternalAsync(new RoomOptions { RoomId = id, Password = pw });
+            await ConnectInternalAsync(new RoomOptions { RoomId = id, Password = pw, AclSecret = lockSecret });
         }
         catch (Exception ex)
         {
@@ -418,9 +454,13 @@ public partial class MainViewModel : ObservableObject
             if (!string.IsNullOrEmpty(decoded.Password)) Password = decoded.Password;
             if (decoded.Port is > 0) GamePortHint = decoded.Port;
             RoomId = rid;
+            // The share link may carry a `lock=` query param (set by the host
+            // when the room is locked). Forward it to EasyTierConfigBuilder so
+            // the guest's TOML has the same group_secret as the host.
+            _lockSecret = decoded.LockSecret;
 
             L($"加入房间: {rid}");
-            await ConnectInternalAsync(new RoomOptions { RoomId = rid, Password = Password });
+            await ConnectInternalAsync(new RoomOptions { RoomId = rid, Password = Password, AclSecret = decoded.LockSecret });
         }
         catch (Exception ex)
         {
@@ -483,7 +523,7 @@ public partial class MainViewModel : ObservableObject
     void CopyLinkCode()
     {
         if (string.IsNullOrWhiteSpace(RoomId)) return;
-        try { Clipboard.SetText(LinkCodeService.Encode(RoomId.Trim(), Password, GamePortHint)); L("联机链接已复制"); }
+        try { Clipboard.SetText(LinkCodeService.Encode(RoomId.Trim(), Password, GamePortHint, _lockSecret)); L("联机链接已复制"); }
         catch { }
     }
 

@@ -9,7 +9,7 @@ public static class LinkCodeService
 {
     public const string Scheme = "linkroom";
 
-    public static string Encode(string roomId, string? password = null, int? port = null)
+    public static string Encode(string roomId, string? password = null, int? port = null, string? lockSecret = null)
     {
         // Room id goes in the path, not the host: URI hosts are case-normalized
         // (lowercased) by parsers, but EasyTier network names are case-sensitive (BUG-17).
@@ -17,11 +17,12 @@ public static class LinkCodeService
         var query = new List<string>();
         if (!string.IsNullOrEmpty(password)) query.Add($"pass={Uri.EscapeDataString(password)}");
         if (port is > 0) query.Add($"port={port}");
+        if (!string.IsNullOrEmpty(lockSecret)) query.Add($"lock={Uri.EscapeDataString(lockSecret)}");
         if (query.Count > 0) sb.Append('?').Append(string.Join('&', query));
         return sb.ToString();
     }
 
-    public static (string RoomId, string? Password, int? Port) Decode(string input)
+    public static (string RoomId, string? Password, int? Port, string? LockSecret) Decode(string input)
     {
         input = input.Trim();
         if (input.StartsWith($"{Scheme}://", StringComparison.OrdinalIgnoreCase))
@@ -42,7 +43,8 @@ public static class LinkCodeService
 
             var pass = GetQuery(query, "pass");
             int? port = int.TryParse(GetQuery(query, "port"), out var p) ? p : null;
-            return (room, pass, port);
+            var lockSecret = GetQuery(query, "lock");
+            return (room, pass, port, lockSecret);
         }
 
         // Plain: ROOMID or ROOMID:pass or ROOMID:pass:port
@@ -51,10 +53,10 @@ public static class LinkCodeService
         {
             var pass = parts.Length >= 2 ? parts[1] : null;
             int? port = parts.Length >= 3 && int.TryParse(parts[2], out var pt) ? pt : null;
-            return (parts[0], pass, port);
+            return (parts[0], pass, port, null);
         }
 
-        return (input, null, null);
+        return (input, null, null, null);
     }
 
     static string? GetQuery(string query, string key)
@@ -69,9 +71,9 @@ public static class LinkCodeService
         return null;
     }
 
-    public static string ToClipboardText(string roomId, string? password, int? port = null)
+    public static string ToClipboardText(string roomId, string? password, int? port = null, string? lockSecret = null)
     {
-        var link = Encode(roomId, password, port);
+        var link = Encode(roomId, password, port, lockSecret);
         return $"LinkRoom 联机\n房间号: {roomId}\n{(string.IsNullOrEmpty(password) ? "" : $"密码: {password}\n")}链接: {link}";
     }
 }

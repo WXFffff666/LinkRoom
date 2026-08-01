@@ -151,4 +151,73 @@ public class EasyTierConfigBuilderTests
         Assert.Equal(0, Occurrences(tables, "disable_ipv4"));
         Assert.Contains("enable_ipv6", tables["flags"]);
     }
+
+    [Fact]
+    public async Task RoomLocked_ConfigContainsAclSection()
+    {
+        // Server-side room lock: when RoomLocked is true and the caller supplies
+        // an AclSecret, the TOML must include the [acl.acl_v1] sections so
+        // easytier-core's default-deny inbound chain drops non-room-owner peers.
+        // Spiked: easytier-core parses this TOML and logs "ACL rules built: 1
+        // inbound" + "peers::acl_filter hot reloaded" (see SPIKE-ACL.md).
+        const string secret = "spike-group-secret-XYZ";
+        var advanced = new AdvancedOptions { RoomLocked = true };
+        var toml = await BuildTomlForRoomAsync(
+            new RoomOptions { RoomId = "ABC12345", AclSecret = secret }, advanced);
+
+        // EasyTier parses [acl.acl_v1] tables identically in TOML and YAML; the
+        // following structural assertions are enough to confirm the builder
+        // emitted a parseable ACL block.
+        Assert.Contains("[acl.acl_v1.group]", toml);
+        Assert.Contains("members = [\"room-owner\"]", toml);
+        Assert.Contains("[[acl.acl_v1.group.declares]]", toml);
+        Assert.Contains("group_name = \"room-owner\"", toml);
+        Assert.Contains($"group_secret = \"{secret}\"", toml);
+        Assert.Contains("group_name = \"guest\"", toml);
+        Assert.Contains("[[acl.acl_v1.chains]]", toml);
+        Assert.Contains("default_action = 2", toml); // 2 = deny (the lock)
+        Assert.Contains("[[acl.acl_v1.chains.rules]]", toml);
+        Assert.Contains("action = 1", toml); // 1 = allow for room-owner
+        Assert.Contains("source_groups = [\"room-owner\"]", toml);
+        Assert.Contains("destination_groups = [\"room-owner\"]", toml);
+    }
+
+    [Fact]
+    public async Task RoomLocked_WithoutAclSecret_OmitsAclSection()
+    {
+        // Caller forgot to generate/forward a secret: builder must NOT emit a
+        // half-configured ACL block (that would break easytier-core startup).
+        // The client-side RoomLocked gate in MainViewModel still blocks this
+        // scenario from reaching easytier-core, but the builder itself stays
+        // fail-safe: no secret, no ACL.
+        var advanced = new AdvancedOptions { RoomLocked = true };
+        var toml = await BuildTomlForRoomAsync(
+            new RoomOptions { RoomId = "ABC12345" }, advanced);
+
+        Assert.DoesNotContain("[acl.acl_v1", toml);
+        Assert.DoesNotContain("group_secret", toml);
+    }
+
+    [Fact]
+    public async Task RoomUnlocked_NoAclSection()
+    {
+        var advanced = new AdvancedOptions { RoomLocked = false };
+        var toml = await BuildTomlForRoomAsync(
+            new RoomOptions { RoomId = "ABC12345", AclSecret = "ignored" }, advanced);
+
+        Assert.DoesNotContain("[acl.acl_v1", toml);
+    }
+
+    async Task<string> BuildTomlForRoomAsync(RoomOptions room, AdvancedOptions advanced)
+    {
+        var cfg = await _builder.BuildAsync(room, null, advanced);
+        try
+        {
+            return await File.ReadAllTextAsync(cfg.ConfigFilePath);
+        }
+        finally
+        {
+            cfg.Cleanup();
+        }
+    }
 }

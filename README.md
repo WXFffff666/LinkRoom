@@ -30,7 +30,7 @@ Windows 便携式 P2P 游戏联机工具。单 exe 发布，数据存储在 exe 
 ### 房间与管理
 
 - **房间历史** — 最近 5 个房间快速重连
-- **房间锁定** — 房主可锁定房间（客户端侧拦截非房主加入）
+- **房间锁定** — 房主可锁定房间（**服务端强制** + 客户端提示，EasyTier ACL `default_action=2` 拒绝非房主成员）。启用时 host 会在生成的 EasyTier 配置中追加 `[acl.acl_v1]` 段（默认拒绝 + 单一允许规则 `source_groups=["room-owner"]`），并把 256-bit `group_secret` 编码进 `linkroom://` 分享链接的 `lock=...` 参数。客人必须使用该链接加入（`EasyTierConfigBuilder` 会自动把同 secret 写进自己的 TOML），否则 host 的入站链会丢弃连接。**配置一致性要求**：所有节点必须使用同一 `group_secret`，否则 EasyTier 组校验失败。**新成员**在 host 开关锁定后需要重新生成链接并重连（secret 随每次开启轮换）。详见 `src/LinkRoom.Core/SPIKE-ACL.md`。
 - **Peer 列表** — 显示 NAT / 延迟 / cost，支持 Ping 全部
 - **密码强度提示** — 实时评估密码安全性
 - **配置导入/导出** — `.linkroom.json` 格式备份与恢复设置
@@ -133,10 +133,15 @@ git tag v1.16.0 && git push origin v1.16.0
 - QR 码联机、短链分享、虚拟 IP 复制、连接测速
 - Windows Toast 通知（成员变动、中继切换）
 - P2P 路径可视化、配置导入导出、MC Mod 检测
-- IPv6-only、SOCKS5 代理、房间锁定、UPnP 可配置
+- IPv6-only、SOCKS5 代理、房间锁定（**v1.16.1 起改为服务端强制：EasyTier ACL**）、UPnP 可配置
 - 首次运行向导、连接进度条、Peer 列表增强
 - 配置校验、进程守护、STUN 缓存统一、设置即时保存
 - 日志内存裁剪（300 条）、PublishReadyToRun 优化
+
+### v1.16.1
+
+- **房间锁定服务端化**：基于 EasyTier ACL（`[acl.acl_v1]` TOML 段，`default_action=2` 拒绝 + `room-owner` group 允许），spike 验证于 `src/LinkRoom.Core/SPIKE-ACL.md`。分享链接新增 `lock=...` 参数携带 256-bit `group_secret`；host 持久化 `RoomId → secret` 映射以支持断线重连
+- 日志脱敏：扩展 `SecretRedactRegex` / `SettingsService.SanitizeLog` 覆盖 `group_secret`，避免 easytier-core 启动 dump 暴露密钥
 
 ### v1.15.0
 
