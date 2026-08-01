@@ -100,13 +100,29 @@ public partial class MainWindow : Window, IMainWindowView
 
     async void UpdateCheck_Click(object s, RoutedEventArgs e)
     {
-        if (DataContext is Gui.MainViewModel vm)
+        if (DataContext is not Gui.MainViewModel vm) return;
+        try
+        {
             await vm.CheckUpdateManualCommand.ExecuteAsync(null);
+        }
+        catch (Exception ex)
+        {
+            vm.L($"检查更新失败: {ex}");
+            System.Diagnostics.Debug.WriteLine(ex);
+        }
     }
 
     async void UpdateLabel_MouseDown(object s, System.Windows.Input.MouseButtonEventArgs e)
     {
-        if (DataContext is Gui.MainViewModel vm)
+        if (DataContext is not Gui.MainViewModel vm) return;
+        try
+        {
             await vm.CheckUpdateManualCommand.ExecuteAsync(null);
+        }
+        catch (Exception ex)
+        {
+            vm.L($"检查更新失败: {ex}");
+            System.Diagnostics.Debug.WriteLine(ex);
+        }
     }
 }

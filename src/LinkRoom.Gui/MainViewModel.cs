@@ -32,6 +32,7 @@ public partial class MainViewModel : ObservableObject
     readonly UpdateService _update;
     readonly ProcessGuardian _guardian;
     readonly ILogger<MainViewModel> _log;
+    readonly LogBuffer _logBuffer;
 
     CancellationTokenSource? _mon;
     IMainWindowView? _win;
@@ -70,6 +71,14 @@ public partial class MainViewModel : ObservableObject
 
         _reconnect = new AutoReconnectService(sm, ReconnectAsync, reconnectLog);
 
+        // LogBuffer owns the thread-safe, bounded log store; its callback marshals
+        // the ObservableCollection write onto the WPF Dispatcher (BUG-2 fix).
+        _logBuffer = new LogBuffer(300, line => Ui(() =>
+        {
+            LogLines.Add(line);
+            while (LogLines.Count > 300) LogLines.RemoveAt(0);
+        }));
+
         _sm.StateChanged += (_, e) =>
         {
             ConnState = e.New.ToString();
@@ -78,20 +87,43 @@ public partial class MainViewModel : ObservableObject
             CreateRoomCommand.NotifyCanExecuteChanged();
         };
 
-        _proc.UnexpectedExit += (_, _) =>
+        // Process.Exited fires on a thread-pool thread — marshal to the UI thread
+        // before touching state/logs (BUG-2 fix).
+        _proc.UnexpectedExit += (_, _) => Ui(() =>
         {
             if (_sm.CurrentState is ConnectionState.Connected or ConnectionState.Monitoring)
             {
                 L("连接意外断开，尝试自动重连...");
                 _sm.ConnectionLost();
             }
-        };
+        });
     }
 
+    // Marshal a synchronous action onto the WPF UI thread (no-op if no Application).
+    // Fire-and-forget: the operation runs on the UI thread; errors are handled by
+    // the action itself (the operation's Task is intentionally not awaited here).
+    void Ui(Action a)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher == null) return;
+        _ = dispatcher.InvokeAsync(a);
+    }
+
+    // Marshal an async action onto the UI thread and await its completion,
+    // unwrapping the inner Task so exceptions propagate to the caller.
+    Task UiAsync(Func<Task> f)
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher == null) return Task.CompletedTask;
+        return dispatcher.InvokeAsync(f).Task.Unwrap();
+    }
+
+    // AutoReconnectService runs its backoff loop on the thread pool —
+    // the reconnect must execute on the UI thread (BUG-2 fix).
     async Task ReconnectAsync(CancellationToken ct)
     {
         if (_lastRoom == null) return;
-        await ConnectInternalAsync(_lastRoom, isReconnect: true);
+        await UiAsync(() => ConnectInternalAsync(_lastRoom, isReconnect: true));
     }
 
     public void SetWindow(IMainWindowView w) => _win = w;
@@ -161,11 +193,10 @@ public partial class MainViewModel : ObservableObject
         RoomLocked = RoomLocked,
     };
 
-    void L(string m)
+    public void L(string m)
     {
         var line = SettingsService.SanitizeLog($"[{DateTime.Now:HH:mm:ss}] {m}");
-        LogLines.Add(line);
-        while (LogLines.Count > 300) LogLines.RemoveAt(0);
+        _logBuffer.Add(line); // thread-safe add; buffer callback marshals LogLines onto the UI thread
         _log.LogInformation(m);
     }
 
@@ -295,11 +326,14 @@ public partial class MainViewModel : ObservableObject
             if (!RoomHistory.Contains(room.RoomId)) RoomHistory.Insert(0, room.RoomId);
             while (RoomHistory.Count > 5) RoomHistory.RemoveAt(RoomHistory.Count - 1);
 
-            _guardian.Start(async () =>
+            // Guardian's WatchAsync ticks on the thread pool — run the recovery
+            // on the UI thread; the returned Task propagates exceptions to the
+            // guardian's own catch (BUG-2 fix).
+            _guardian.Start(() => UiAsync(async () =>
             {
                 L("EasyTier 进程异常，尝试恢复...");
                 if (_lastRoom != null) await ConnectInternalAsync(_lastRoom, isReconnect: true);
-            });
+            }));
 
             await (_mon?.CancelAsync() ?? Task.CompletedTask);
             _mon = new CancellationTokenSource();

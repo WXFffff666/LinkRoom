@@ -15,6 +15,16 @@ public partial class PeerListWindow : Window
         PeerHint.Text = $"共 {vm.PeerCount} 人在线 · 格式: 角色 | IP | NAT | 延迟 | cost";
     }
 
-    async void PingAll_Click(object s, RoutedEventArgs e) =>
-        await _vm.PingPeersCommand.ExecuteAsync(null);
+    async void PingAll_Click(object s, RoutedEventArgs e)
+    {
+        try
+        {
+            await _vm.PingPeersCommand.ExecuteAsync(null);
+        }
+        catch (Exception ex)
+        {
+            _vm.L($"Ping 全部失败: {ex}");
+            System.Diagnostics.Debug.WriteLine(ex);
+        }
+    }
 }

@@ -14,6 +14,21 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        try
+        {
+            await StartupCoreAsync(e);
+        }
+        catch (Exception ex)
+        {
+            // async void — never let an exception escape OnStartup (BUG-10 fix).
+            System.Diagnostics.Debug.WriteLine(ex);
+            try { MessageBox.Show($"启动失败: {ex.Message}", "LinkRoom"); } catch { }
+            Shutdown();
+        }
+    }
+
+    async Task StartupCoreAsync(StartupEventArgs e)
+    {
         base.OnStartup(e);
         Exit += (_, _) => EasyTierProcessService.KillOrphanProcesses();
 
