@@ -106,7 +106,7 @@ GET https://api.github.com/repos/WXFffff666/LinkRoom/releases/latest
 **功能**
 
 - 游戏进程自动检测 + 一键开房、房间聊天（虚拟网 TCP）、rx/tx 流量统计（spike 验证采样方案）
-- 中英 i18n（resx 114 key）、UI 美化（36 色板 DynamicResource 深浅切换）
+- 中英 i18n（resx 114 key）、UI 美化（38 色板 DynamicResource 深浅切换）
 
 ### v1.16.0（2026-07-12）
 

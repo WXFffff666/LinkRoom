@@ -53,7 +53,7 @@ Windows 便携式 P2P 游戏联机工具。单 exe 发布，数据存储在 exe 
 - **崩溃自动诊断** — 异常退出时自动打包诊断 zip，并预填 GitHub Issue 链接方便上报
 - **首次运行向导** — 模式选择、自动更新、便携模式引导
 - **CLI 模式** — `LinkRoom.exe --join ROOM --pass xxx --headless`
-- **UI 美化** — Fluent 风格 36 色板（DynamicResource），深浅色一键切换
+- **UI 美化** — Fluent 风格 38 色板（DynamicResource），深浅色一键切换
 - **诊断导出 / Web 管理面板 / 插件 API**
 
 ## 自动更新
@@ -164,7 +164,7 @@ git tag v1.17.0 && git push origin v1.17.0
 - 房间聊天（虚拟网 TCP，端口 15889）
 - rx/tx 流量统计（连接质量面板）
 - 中英双语 i18n（resx 114 key，跟随系统 / 手动切换，见上文「多语言（i18n）」）
-- UI 美化（Fluent 36 色板 DynamicResource，深浅色切换）
+- UI 美化（Fluent 38 色板 DynamicResource，深浅色切换）
 
 ### v1.16.0
 
