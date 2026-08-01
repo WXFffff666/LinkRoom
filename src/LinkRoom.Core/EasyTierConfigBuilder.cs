@@ -72,19 +72,19 @@ public sealed class EasyTierConfigBuilder
                 sb.AppendLine(flag);
         }
 
-        if (advanced.EnableSocks5 && advanced.Socks5Port is >= 1024 and <= 65535)
-        {
-            sb.AppendLine();
-            sb.AppendLine("[proxy]");
-            sb.AppendLine($"socks5_port = {advanced.Socks5Port}");
-        }
-
         if (snapshot != null)
         {
             if (snapshot.IsSymmetric && !advanced.IsUpnpDisabled)
                 sb.AppendLine("disable_upnp = false");
             else
                 sb.AppendLine("disable_upnp = true");
+        }
+
+        if (advanced.EnableSocks5 && advanced.Socks5Port is >= 1024 and <= 65535)
+        {
+            sb.AppendLine();
+            sb.AppendLine("[proxy]");
+            sb.AppendLine($"socks5_port = {advanced.Socks5Port}");
         }
 
         if (advanced.IsSharedNodeEnabled && !string.IsNullOrWhiteSpace(advanced.SharedNodeUrls))

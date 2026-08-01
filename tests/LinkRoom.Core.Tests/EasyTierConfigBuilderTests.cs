@@ -101,6 +101,24 @@ public class EasyTierConfigBuilderTests
     }
 
     [Fact]
+    public async Task Socks5WithSnapshot_DisableUpnpInFlagsTable_NotInProxy()
+    {
+        var advanced = new AdvancedOptions { EnableSocks5 = true, Socks5Port = 1080 };
+        var snapshot = new NetworkSnapshot
+        {
+            NatType = NatType.FullCone,
+            StunReachable = true,
+            PublicIPv4 = "203.0.113.10",
+        };
+
+        var tables = ParseTables(await BuildTomlAsync(advanced, snapshot));
+
+        Assert.Contains("socks5_port", tables["proxy"]);
+        Assert.Contains("disable_upnp", tables["flags"]);
+        Assert.DoesNotContain("disable_upnp", tables["proxy"]);
+    }
+
+    [Fact]
     public async Task Default_NoIpv6_NoDisableIpv4OrEnableIpv6()
     {
         var tables = ParseTables(await BuildTomlAsync(new AdvancedOptions()));
