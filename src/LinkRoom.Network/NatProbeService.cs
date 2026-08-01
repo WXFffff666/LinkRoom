@@ -47,14 +47,16 @@ public sealed class NatProbeService
             var r = await done;
             if (r != null && r.StunReachable)
             {
+                await master.CancelAsync(); // stop the remaining abandoned probes (BUG-11)
                 _logger.LogInformation("NAT fast probe => {Nat} via binding", r.NatType);
                 return MergeLocal(result, r);
             }
         }
 
-        // Phase 2: concurrent full RFC5780 (15s each)
-        using var slow = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        slow.CancelAfter(TimeSpan.FromSeconds(45));
+        // Phase 2: concurrent full RFC5780 (15s each; linked to master so the
+        // first success also cancels these — no separate 45s budget needed, it
+        // never fired while per-server 15s timeouts already bound the phase).
+        using var slow = CancellationTokenSource.CreateLinkedTokenSource(ct, master.Token);
         var slowTasks = serverList.Select(s => ProbeSingleAsync(s.Host, s.Port, fullBehavior: true, slow.Token)).ToList();
         while (slowTasks.Count > 0)
         {
@@ -63,6 +65,7 @@ public sealed class NatProbeService
             var r = await done;
             if (r != null && r.StunReachable)
             {
+                await master.CancelAsync(); // stop the remaining abandoned probes (BUG-11)
                 _logger.LogInformation("NAT full probe => {Nat}", r.NatType);
                 return MergeLocal(result, r);
             }

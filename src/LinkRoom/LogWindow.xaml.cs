@@ -11,8 +11,13 @@ public partial class LogWindow : Window
         InitializeComponent();
         _source = source;
         RefreshLog();
-        _source.CollectionChanged += (_, _) => Dispatcher.Invoke(RefreshLog);
+        _source.CollectionChanged += OnSourceChanged;
+        // Avoid leaking the subscription into the static LogLines collection (BUG-14).
+        Closed += (_, _) => _source.CollectionChanged -= OnSourceChanged;
     }
+
+    private void OnSourceChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        => Dispatcher.Invoke(RefreshLog);
 
     private void RefreshLog()
     {

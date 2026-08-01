@@ -38,8 +38,11 @@ public static class AppPaths
     {
         get
         {
-            if (_portable == true || (_portable != false && IsDirectoryWritable(Path.Combine(ExeDirectory, DataFolderName))))
-                return Path.Combine(ExeDirectory, DataFolderName);
+            // Portable mode still requires a writable exe dir — otherwise fall
+            // back to %LocalAppData%\LinkRoom (BUG-7).
+            var portableDir = Path.Combine(ExeDirectory, DataFolderName);
+            if (_portable != false && IsDirectoryWritable(portableDir))
+                return portableDir;
             return Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "LinkRoom");
@@ -57,12 +60,24 @@ public static class AppPaths
 
     public static void EnsureDataDirectories()
     {
-        Directory.CreateDirectory(RuntimeDir);
-        Directory.CreateDirectory(ConfigDir);
-        Directory.CreateDirectory(LogDir);
-        Directory.CreateDirectory(TempDir);
-        Directory.CreateDirectory(DiagnosticsDir);
-        Directory.CreateDirectory(PluginsDir);
+        try
+        {
+            Directory.CreateDirectory(RuntimeDir);
+            Directory.CreateDirectory(ConfigDir);
+            Directory.CreateDirectory(LogDir);
+            Directory.CreateDirectory(TempDir);
+            Directory.CreateDirectory(DiagnosticsDir);
+            Directory.CreateDirectory(PluginsDir);
+
+            // Crash cleanup (BUG-12): temp EasyTier configs may contain the room
+            // secret — remove any residue left by a crashed previous run.
+            foreach (var f in Directory.EnumerateFiles(TempDir, "*.toml"))
+                try { File.Delete(f); } catch { }
+        }
+        catch (Exception ex)
+        {
+            throw new IOException($"无法创建数据目录 {DataRoot}: {ex.Message}", ex);
+        }
     }
 
     static bool IsDirectoryWritable(string dir)

@@ -91,20 +91,29 @@ public sealed class UpdateService
         resp.EnsureSuccessStatusCode();
         var total = resp.Content.Headers.ContentLength ?? info.SizeBytes;
 
-        await using var stream = await resp.Content.ReadAsStreamAsync(ct);
-        await using var fs = File.Create(partial);
-        var buffer = new byte[81920];
-        long received = 0;
-        int read;
-        while ((read = await stream.ReadAsync(buffer, ct)) > 0)
+        long received;
+        try
         {
-            await fs.WriteAsync(buffer.AsMemory(0, read), ct);
-            received += read;
-            progress?.Report(new UpdateDownloadProgress(received, total, total > 0 ? received * 100.0 / total : 0));
-        }
+            await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+            await using var fs = File.Create(partial);
+            var buffer = new byte[81920];
+            received = 0;
+            int read;
+            while ((read = await stream.ReadAsync(buffer, ct)) > 0)
+            {
+                await fs.WriteAsync(buffer.AsMemory(0, read), ct);
+                received += read;
+                progress?.Report(new UpdateDownloadProgress(received, total, total > 0 ? received * 100.0 / total : 0));
+            }
 
-        if (File.Exists(dest)) File.Delete(dest);
-        File.Move(partial, dest);
+            if (File.Exists(dest)) File.Delete(dest);
+            File.Move(partial, dest);
+        }
+        finally
+        {
+            // Never leave a stale .partial behind after a failed download (BUG-15).
+            try { if (File.Exists(partial)) File.Delete(partial); } catch { }
+        }
 
         var manifest = new UpdateManifest
         {

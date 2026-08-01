@@ -11,7 +11,9 @@ public static class LinkCodeService
 
     public static string Encode(string roomId, string? password = null, int? port = null)
     {
-        var sb = new StringBuilder($"{Scheme}://{Uri.EscapeDataString(roomId.Trim())}");
+        // Room id goes in the path, not the host: URI hosts are case-normalized
+        // (lowercased) by parsers, but EasyTier network names are case-sensitive (BUG-17).
+        var sb = new StringBuilder($"{Scheme}://link/{Uri.EscapeDataString(roomId.Trim())}");
         var query = new List<string>();
         if (!string.IsNullOrEmpty(password)) query.Add($"pass={Uri.EscapeDataString(password)}");
         if (port is > 0) query.Add($"port={port}");
@@ -24,12 +26,22 @@ public static class LinkCodeService
         input = input.Trim();
         if (input.StartsWith($"{Scheme}://", StringComparison.OrdinalIgnoreCase))
         {
-            var uri = new Uri(input);
-            var room = Uri.UnescapeDataString(uri.Host + uri.AbsolutePath).Trim('/');
-            if (string.IsNullOrEmpty(room) && uri.Segments.Length > 1)
-                room = Uri.UnescapeDataString(uri.Segments[^1].Trim('/'));
-            var pass = GetQuery(uri.Query, "pass");
-            int? port = int.TryParse(GetQuery(uri.Query, "port"), out var p) ? p : null;
+            // Parse manually instead of via new Uri(...).Host, which would
+            // lowercase the room id (BUG-17). Legacy links put the raw room id
+            // in the host; new links put it after "link/".
+            var rest = input.Substring($"{Scheme}://".Length);
+            var frag = rest.IndexOf('#');
+            if (frag >= 0) rest = rest[..frag];
+            var qIdx = rest.IndexOf('?');
+            var path = (qIdx >= 0 ? rest[..qIdx] : rest).Trim('/');
+            var query = qIdx >= 0 ? rest[qIdx..] : "";
+
+            var room = path.StartsWith("link/", StringComparison.OrdinalIgnoreCase)
+                ? Uri.UnescapeDataString(path["link/".Length..].Trim('/'))
+                : Uri.UnescapeDataString(path); // legacy: host was the room id
+
+            var pass = GetQuery(query, "pass");
+            int? port = int.TryParse(GetQuery(query, "port"), out var p) ? p : null;
             return (room, pass, port);
         }
 

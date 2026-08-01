@@ -211,10 +211,15 @@ public partial class MainViewModel : ObservableObject
 
     static string GenPw()
     {
-        var b = RandomNumberGenerator.GetBytes(8);
         var sb = new StringBuilder(8);
         const string c = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-        for (int i = 0; i < 8; i++) sb.Append(c[b[i] % c.Length]);
+        // Rejection sampling: 256 % c.Length != 0 would bias low indexes via modulo (BUG-16).
+        for (int i = 0; i < 8; i++)
+        {
+            byte b;
+            do { b = RandomNumberGenerator.GetBytes(1)[0]; } while (b >= 256 - 256 % c.Length);
+            sb.Append(c[b % c.Length]);
+        }
         return sb.ToString();
     }
 
@@ -549,7 +554,7 @@ public partial class MainViewModel : ObservableObject
                 }
             }
             catch (OperationCanceledException) { break; }
-            catch { }
+            catch (Exception ex) { L($"监控错误: {ex.Message}"); }
         }
     }
 

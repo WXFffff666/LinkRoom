@@ -122,13 +122,18 @@ public sealed class EasyTierProcessService : IDisposable
                 // Try graceful close first
                 _process.CloseMainWindow();
 
-                // Wait briefly, then kill
-                var exited = _process.WaitForExit(3000);
+                // Wait briefly without blocking the calling thread (BUG-13), then kill
+                var exitTask = _process.WaitForExitAsync(ct);
+                var done = await Task.WhenAny(exitTask, Task.Delay(TimeSpan.FromSeconds(3)));
+                var exited = done == exitTask;
                 if (!exited && !_process.HasExited)
                 {
                     _logger.LogWarning("EasyTier core did not exit gracefully, killing...");
                     _process.Kill(entireProcessTree: true);
                 }
+                // Observe the abandoned wait so a late cancellation can't surface as
+                // an unobserved task exception.
+                if (!exited) _ = exitTask.ContinueWith(_ => { }, TaskScheduler.Default);
             }
         }
         catch (Exception ex)
