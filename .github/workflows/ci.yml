@@ -37,6 +37,10 @@ jobs:
       - name: Run tests
         run: dotnet test LinkRoom.sln -c Release --no-build
 
+      - name: Smoke test (EasyTier P2P mesh, no TUN)
+        shell: pwsh
+        run: .\tools\smoke-test.ps1 -RuntimeDir src/LinkRoom.Core/Assets/easytier -NoTun
+
       - name: Verify artifact
         shell: pwsh
         run: |
