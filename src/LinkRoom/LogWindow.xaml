@@ -7,7 +7,7 @@
         Title="{x:Static res:Strings.LogTitle}" Height="500" Width="600"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize">
 
-    <Grid Margin="8">
+    <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -15,17 +15,20 @@
         </Grid.RowDefinitions>
 
         <DockPanel Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock Text="{x:Static res:Strings.LogHeader}" FontSize="14" FontWeight="Bold" Foreground="#1D1D1F" DockPanel.Dock="Left"/>
+            <TextBlock Text="{x:Static res:Strings.LogHeader}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" DockPanel.Dock="Left"/>
             <Button Content="{x:Static res:Strings.LogClear}" FontSize="11" Click="Clear_Click" DockPanel.Dock="Right"
-                    Background="Transparent" BorderThickness="0" Foreground="#FF3B30" Cursor="Hand"/>
+                    Background="Transparent" BorderThickness="0" Foreground="{DynamicResource DangerRed}" Cursor="Hand"/>
             <Button Content="{x:Static res:Strings.LogCopy}" FontSize="11" Click="Copy_Click" DockPanel.Dock="Right" Margin="0,0,8,0"
-                    Background="Transparent" BorderThickness="0" Foreground="#007AFF" Cursor="Hand"/>
+                    Background="Transparent" BorderThickness="0" Foreground="{DynamicResource BrandBlue}" Cursor="Hand"/>
         </DockPanel>
 
-        <TextBox x:Name="LogContent" Grid.Row="1" IsReadOnly="True"
-                 FontFamily="Consolas" FontSize="11" Background="#1E1E1E" Foreground="#D4D4D4"
-                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-                 TextWrapping="NoWrap" BorderThickness="0"/>
+        <Border Grid.Row="1" Background="{DynamicResource LogBackground}" BorderBrush="{DynamicResource NeutralBorder}"
+                BorderThickness="1" CornerRadius="8">
+            <TextBox x:Name="LogContent" IsReadOnly="True"
+                     FontFamily="Consolas" FontSize="11" Background="{DynamicResource LogBackground}" Foreground="{DynamicResource TextOnDark}"
+                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                     TextWrapping="NoWrap" BorderThickness="0"/>
+        </Border>
 
         <Button Grid.Row="2" Content="{x:Static res:Strings.LogClose}" Height="32" FontSize="12" Margin="0,8,0,0"
                 Click="Close_Click"/>

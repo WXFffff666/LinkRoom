@@ -7,100 +7,144 @@
         Title="{x:Static res:Strings.SettingsTitle}" Height="720" Width="420"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
 
+    <Window.Resources>
+        <Style x:Key="SettingsSectionCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource NeutralBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+        <Style x:Key="SettingsSectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        <Style x:Key="SettingsHintStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </Window.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="24,16">
-            <TextBlock Text="{x:Static res:Strings.SettingsHeader}" FontSize="18" FontWeight="Bold" Foreground="#1D1D1F" Margin="0,0,0,16"/>
+            <TextBlock Text="{x:Static res:Strings.SettingsHeader}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsConnectionMode}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsLanMode}" IsChecked="{Binding UseLanMode}" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsDisableUpnp}" IsChecked="{Binding IsUpnpDisabled}" Margin="0,0,0,4"/>
-            <TextBlock Text="{x:Static res:Strings.SettingsLanModeHint}" FontSize="10" Foreground="#8E8E93" Margin="0,0,0,12"/>
+            <Border Style="{StaticResource SettingsSectionCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="{x:Static res:Strings.SettingsConnectionMode}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsLanMode}" IsChecked="{Binding UseLanMode}" Margin="0,0,0,4"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsDisableUpnp}" IsChecked="{Binding IsUpnpDisabled}" Margin="0,0,0,4"/>
+                    <TextBlock Text="{x:Static res:Strings.SettingsLanModeHint}" Style="{StaticResource SettingsHintStyle}" Margin="0,0,0,8"/>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsListenerPort}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <TextBox Padding="8,6" Text="{Binding ListenerPort, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA" Margin="0,0,0,12"/>
+                    <TextBlock Text="{x:Static res:Strings.SettingsListenerPort}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <TextBox Padding="8,6" Text="{Binding ListenerPort, UpdateSourceTrigger=LostFocus}"
+                             BorderBrush="{DynamicResource NeutralBorder}" Margin="0,0,0,4"/>
+                </StackPanel>
+            </Border>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsSharedNode}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsEnableSharedNode}" IsChecked="{Binding IsSharedNodeEnabled}" Margin="0,0,0,4"/>
-            <TextBox Padding="8,6" Text="{Binding SharedNodeUrls}" IsEnabled="{Binding IsSharedNodeEnabled}"
-                     BorderBrush="#E5E5EA" ToolTip="{x:Static res:Strings.SettingsSharedNodeTip}" Margin="0,0,0,12"/>
+            <Border Style="{StaticResource SettingsSectionCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="{x:Static res:Strings.SettingsSharedNode}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsEnableSharedNode}" IsChecked="{Binding IsSharedNodeEnabled}" Margin="0,0,0,4"/>
+                    <TextBox Padding="8,6" Text="{Binding SharedNodeUrls}" IsEnabled="{Binding IsSharedNodeEnabled}"
+                             BorderBrush="{DynamicResource NeutralBorder}" ToolTip="{x:Static res:Strings.SettingsSharedNodeTip}" Margin="0,0,0,8"/>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsSecureMode}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsEnableSecureMode}" IsChecked="{Binding EnableSecureMode}" Margin="0,0,0,4"/>
-            <TextBox Padding="8,6" Text="{Binding SharedNodePublicKey}" IsEnabled="{Binding EnableSecureMode}"
-                     BorderBrush="#E5E5EA" ToolTip="{x:Static res:Strings.SettingsSecureKeyTip}" Margin="0,0,0,4"/>
-            <TextBlock Text="{x:Static res:Strings.SettingsSecureKeyHint}"
-                       FontSize="10" Foreground="#8E8E93" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <TextBlock Text="{x:Static res:Strings.SettingsSecureMode}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsEnableSecureMode}" IsChecked="{Binding EnableSecureMode}" Margin="0,0,0,4"/>
+                    <TextBox Padding="8,6" Text="{Binding SharedNodePublicKey}" IsEnabled="{Binding EnableSecureMode}"
+                             BorderBrush="{DynamicResource NeutralBorder}" ToolTip="{x:Static res:Strings.SettingsSecureKeyTip}" Margin="0,0,0,4"/>
+                    <TextBlock Text="{x:Static res:Strings.SettingsSecureKeyHint}"
+                               Style="{StaticResource SettingsHintStyle}" Margin="0,0,0,8"/>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsStunServers}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <TextBox Padding="8,6" Text="{Binding CustomStunServers}" BorderBrush="#E5E5EA"
-                     ToolTip="{x:Static res:Strings.SettingsStunTip}" Margin="0,0,0,4"/>
-            <Button Content="{x:Static res:Strings.SettingsRefreshStun}" Height="32" Click="RefreshStun_Click" Margin="0,0,0,4"/>
-            <Button Content="{x:Static res:Strings.SettingsRefreshNetwork}" Height="32" Click="RefreshNetwork_Click" Margin="0,0,0,12"/>
+                    <TextBlock Text="{x:Static res:Strings.SettingsStunServers}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <TextBox Padding="8,6" Text="{Binding CustomStunServers}" BorderBrush="{DynamicResource NeutralBorder}"
+                             ToolTip="{x:Static res:Strings.SettingsStunTip}" Margin="0,0,0,4"/>
+                    <Button Content="{x:Static res:Strings.SettingsRefreshStun}" Height="32" Click="RefreshStun_Click" Margin="0,0,0,4"/>
+                    <Button Content="{x:Static res:Strings.SettingsRefreshNetwork}" Height="32" Click="RefreshNetwork_Click" Margin="0,0,0,4"/>
+                </StackPanel>
+            </Border>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsAutoReconnect}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <TextBox Padding="8,6" Text="{Binding MaxReconnectAttempts, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA" Margin="0,0,0,12"/>
+            <Border Style="{StaticResource SettingsSectionCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="{x:Static res:Strings.SettingsAutoReconnect}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <TextBox Padding="8,6" Text="{Binding MaxReconnectAttempts, UpdateSourceTrigger=LostFocus}"
+                             BorderBrush="{DynamicResource NeutralBorder}" Margin="0,0,0,4"/>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsVipMtuIpv6}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <TextBox Padding="8,6" Text="{Binding StaticVirtualIp}" BorderBrush="#E5E5EA" ToolTip="{x:Static res:Strings.SettingsVipTip}" Margin="0,0,0,4"/>
-            <TextBox Padding="8,6" Text="{Binding Mtu, UpdateSourceTrigger=LostFocus}" BorderBrush="#E5E5EA" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsPreferIpv6}" IsChecked="{Binding PreferIPv6}" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsIpv6Only}" IsChecked="{Binding Ipv6Only}" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsEnableSocks5}" IsChecked="{Binding EnableSocks5}" Margin="0,0,0,4"/>
-            <TextBox Padding="8,6" Text="{Binding Socks5Port, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding EnableSocks5}"
-                     BorderBrush="#E5E5EA" ToolTip="{x:Static res:Strings.SettingsSocks5Tip}" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsRoomLocked}" IsChecked="{Binding RoomLocked}" Margin="0,0,0,12"/>
+                    <TextBlock Text="{x:Static res:Strings.SettingsVipMtuIpv6}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <TextBox Padding="8,6" Text="{Binding StaticVirtualIp}" BorderBrush="{DynamicResource NeutralBorder}" ToolTip="{x:Static res:Strings.SettingsVipTip}" Margin="0,0,0,4"/>
+                    <TextBox Padding="8,6" Text="{Binding Mtu, UpdateSourceTrigger=LostFocus}" BorderBrush="{DynamicResource NeutralBorder}" Margin="0,0,0,4"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsPreferIpv6}" IsChecked="{Binding PreferIPv6}" Margin="0,0,0,4"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsIpv6Only}" IsChecked="{Binding Ipv6Only}" Margin="0,0,0,4"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsEnableSocks5}" IsChecked="{Binding EnableSocks5}" Margin="0,0,0,4"/>
+                    <TextBox Padding="8,6" Text="{Binding Socks5Port, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding EnableSocks5}"
+                             BorderBrush="{DynamicResource NeutralBorder}" ToolTip="{x:Static res:Strings.SettingsSocks5Tip}" Margin="0,0,0,4"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsRoomLocked}" IsChecked="{Binding RoomLocked}" Margin="0,0,0,4"/>
+                </StackPanel>
+            </Border>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsUpdate}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsAutoCheckUpdate}" IsChecked="{Binding AutoCheckUpdate}" Margin="0,0,0,4"/>
-            <Button Content="{x:Static res:Strings.SettingsCheckUpdateNow}" Height="32" Click="CheckUpdate_Click" Margin="0,0,0,12"/>
+            <Border Style="{StaticResource SettingsSectionCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="{x:Static res:Strings.SettingsUpdate}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsAutoCheckUpdate}" IsChecked="{Binding AutoCheckUpdate}" Margin="0,0,0,4"/>
+                    <Button Content="{x:Static res:Strings.SettingsCheckUpdateNow}" Height="32" Click="CheckUpdate_Click" Margin="0,0,0,4"/>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsConfigManagement}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                <Button Content="{x:Static res:Strings.SettingsExportConfig}" Height="32" Width="110" Click="ExportConfig_Click" Margin="0,0,8,0"/>
-                <Button Content="{x:Static res:Strings.SettingsImportConfig}" Height="32" Width="110" Click="ImportConfig_Click"/>
-            </StackPanel>
+                    <TextBlock Text="{x:Static res:Strings.SettingsConfigManagement}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <Button Content="{x:Static res:Strings.SettingsExportConfig}" Height="32" Width="110" Click="ExportConfig_Click" Margin="0,0,8,0"/>
+                        <Button Content="{x:Static res:Strings.SettingsImportConfig}" Height="32" Width="110" Click="ImportConfig_Click"/>
+                    </StackPanel>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsDataStorage}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsPortableMode}" IsChecked="{Binding PortableMode}" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsAutoStart}" IsChecked="{Binding AutoStart}" Margin="0,0,0,4"/>
-            <CheckBox Content="{x:Static res:Strings.SettingsDarkMode}" IsChecked="{Binding DarkMode}" Margin="0,0,0,12"/>
+                    <TextBlock Text="{x:Static res:Strings.SettingsDataStorage}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsPortableMode}" IsChecked="{Binding PortableMode}" Margin="0,0,0,4"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsAutoStart}" IsChecked="{Binding AutoStart}" Margin="0,0,0,4"/>
+                    <CheckBox Content="{x:Static res:Strings.SettingsDarkMode}" IsChecked="{Binding DarkMode}" Margin="0,0,0,4"/>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsLanguage}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding Language, UpdateSourceTrigger=PropertyChanged}"
-                      SelectionChanged="Language_SelectionChanged" Margin="0,0,0,4">
-                <ComboBoxItem Content="{x:Static res:Strings.LangSystem}" Tag="system"/>
-                <ComboBoxItem Content="{x:Static res:Strings.LangZh}" Tag="zh"/>
-                <ComboBoxItem Content="{x:Static res:Strings.LangEn}" Tag="en"/>
-            </ComboBox>
-            <TextBlock Text="{x:Static res:Strings.SettingsLanguageTip}" FontSize="10" Foreground="#8E8E93" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <TextBlock Text="{x:Static res:Strings.SettingsLanguage}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding Language, UpdateSourceTrigger=PropertyChanged}"
+                              SelectionChanged="Language_SelectionChanged" Margin="0,0,0,4">
+                        <ComboBoxItem Content="{x:Static res:Strings.LangSystem}" Tag="system"/>
+                        <ComboBoxItem Content="{x:Static res:Strings.LangZh}" Tag="zh"/>
+                        <ComboBoxItem Content="{x:Static res:Strings.LangEn}" Tag="en"/>
+                    </ComboBox>
+                    <TextBlock Text="{x:Static res:Strings.SettingsLanguageTip}" Style="{StaticResource SettingsHintStyle}" Margin="0,0,0,4"/>
+                </StackPanel>
+            </Border>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsGamePorts}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <Button Content="{x:Static res:Strings.SettingsScanGamePorts}" Height="36" Click="ScanGamePorts_Click" Margin="0,0,0,4"/>
-            <TextBlock x:Name="GamePortResult" FontSize="12" Foreground="#2E7D32" TextWrapping="Wrap" Margin="0,0,0,12"/>
+            <Border Style="{StaticResource SettingsSectionCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="{x:Static res:Strings.SettingsGamePorts}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <Button Content="{x:Static res:Strings.SettingsScanGamePorts}" Height="36" Click="ScanGamePorts_Click" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="GamePortResult" FontSize="12" Foreground="{DynamicResource SuccessTextStrong}" TextWrapping="Wrap" Margin="0,0,0,4"/>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsNatTest}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <Button Content="{x:Static res:Strings.SettingsTestNat}" Height="36" Click="TestNat_Click" Margin="0,0,0,4"/>
-            <TextBlock x:Name="NatTestResult" FontSize="11" Foreground="#6E6E73" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <TextBlock Text="{x:Static res:Strings.SettingsNatTest}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <Button Content="{x:Static res:Strings.SettingsTestNat}" Height="36" Click="TestNat_Click" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="NatTestResult" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,4"/>
 
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <Button Content="{x:Static res:Strings.SettingsSelfCheck}" Height="36" Width="100" Click="RunSelfCheck_Click" Margin="0,0,8,0"/>
-                <Button Content="{x:Static res:Strings.SettingsExportDiag}" Height="36" Width="120" Click="ExportDiag_Click" Margin="0,0,8,0"/>
-                <Button Content="{x:Static res:Strings.SettingsWebPanel}" Height="36" Width="100" Click="OpenWebPanel_Click"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <Button Content="{x:Static res:Strings.SettingsScanMods}" Height="32" Width="120" Click="ScanMods_Click" Margin="0,0,8,0"/>
-                <Button Content="{x:Static res:Strings.SettingsEtVersion}" Height="32" Width="120" Click="CheckEtVersion_Click"/>
-            </StackPanel>
-            <TextBlock x:Name="SelfCheckResult" FontSize="11" Foreground="#6E6E73" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="{x:Static res:Strings.SettingsSelfCheck}" Height="36" Width="100" Click="RunSelfCheck_Click" Margin="0,0,8,0"/>
+                        <Button Content="{x:Static res:Strings.SettingsExportDiag}" Height="36" Width="120" Click="ExportDiag_Click" Margin="0,0,8,0"/>
+                        <Button Content="{x:Static res:Strings.SettingsWebPanel}" Height="36" Width="100" Click="OpenWebPanel_Click"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="{x:Static res:Strings.SettingsScanMods}" Height="32" Width="120" Click="ScanMods_Click" Margin="0,0,8,0"/>
+                        <Button Content="{x:Static res:Strings.SettingsEtVersion}" Height="32" Width="120" Click="CheckEtVersion_Click"/>
+                    </StackPanel>
+                    <TextBlock x:Name="SelfCheckResult" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,4"/>
 
-            <TextBlock Text="{x:Static res:Strings.SettingsPlugins}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4"/>
-            <ItemsControl x:Name="PluginList" FontSize="12" Foreground="#6E6E73" Margin="0,0,0,12">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,2"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                    <TextBlock Text="{x:Static res:Strings.SettingsPlugins}" Style="{StaticResource SettingsSectionTitleStyle}"/>
+                    <ItemsControl x:Name="PluginList" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,2"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
 
             <Button Content="{x:Static res:Strings.SettingsClose}" Height="36" Click="Close_Click"/>
         </StackPanel>

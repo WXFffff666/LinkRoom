@@ -5,8 +5,76 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="AppColors.xaml"/>
-                <ui:ThemeResources/>
+                <!-- Custom theme-aware color brushes.
+                     Semantic keys (TextPrimary / NeutralCard / ...) are forwarders that
+                     resolve to a Light/Dark variant from AppColors.xaml depending on the
+                     active ThemeManager.ApplicationTheme. When the theme switches,
+                     ThemeResources swaps the active dictionary and every
+                     {DynamicResource} reference re-evaluates. -->
+                <ui:ThemeResources>
+                    <ui:ThemeResources.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Light">
+                            <ResourceDictionary.MergedDictionaries>
+                                <ResourceDictionary Source="AppColors.xaml"/>
+                            </ResourceDictionary.MergedDictionaries>
+                            <StaticResource x:Key="TextPrimary" ResourceKey="TextPrimaryLight"/>
+                            <StaticResource x:Key="TextSecondary" ResourceKey="TextSecondaryLight"/>
+                            <StaticResource x:Key="TextTertiary" ResourceKey="TextTertiaryLight"/>
+                            <StaticResource x:Key="TextFaint" ResourceKey="TextFaintLight"/>
+                            <StaticResource x:Key="SurfaceBackground" ResourceKey="SurfaceBackgroundLight"/>
+                            <StaticResource x:Key="CardBackground" ResourceKey="CardBackgroundLight"/>
+                            <StaticResource x:Key="NeutralCard" ResourceKey="NeutralCardLight"/>
+                            <StaticResource x:Key="NeutralBorder" ResourceKey="NeutralBorderLight"/>
+                            <StaticResource x:Key="StatusIdle" ResourceKey="StatusIdleLight"/>
+                            <StaticResource x:Key="SuccessTintBrush" ResourceKey="SuccessTintLight"/>
+                            <StaticResource x:Key="SuccessTextStrong" ResourceKey="SuccessTextStrongLight"/>
+                            <StaticResource x:Key="SuccessTextDeep" ResourceKey="SuccessTextDeepLight"/>
+                            <StaticResource x:Key="SuccessTextMedium" ResourceKey="SuccessTextMediumLight"/>
+                            <StaticResource x:Key="InfoTintBrush" ResourceKey="InfoTintLight"/>
+                        </ResourceDictionary>
+
+                        <ResourceDictionary x:Key="Dark">
+                            <ResourceDictionary.MergedDictionaries>
+                                <ResourceDictionary Source="AppColors.xaml"/>
+                            </ResourceDictionary.MergedDictionaries>
+                            <StaticResource x:Key="TextPrimary" ResourceKey="TextPrimaryDark"/>
+                            <StaticResource x:Key="TextSecondary" ResourceKey="TextSecondaryDark"/>
+                            <StaticResource x:Key="TextTertiary" ResourceKey="TextTertiaryDark"/>
+                            <StaticResource x:Key="TextFaint" ResourceKey="TextFaintDark"/>
+                            <StaticResource x:Key="SurfaceBackground" ResourceKey="SurfaceBackgroundDark"/>
+                            <StaticResource x:Key="CardBackground" ResourceKey="CardBackgroundDark"/>
+                            <StaticResource x:Key="NeutralCard" ResourceKey="NeutralCardDark"/>
+                            <StaticResource x:Key="NeutralBorder" ResourceKey="NeutralBorderDark"/>
+                            <StaticResource x:Key="StatusIdle" ResourceKey="StatusIdleDark"/>
+                            <StaticResource x:Key="SuccessTintBrush" ResourceKey="SuccessTintDark"/>
+                            <StaticResource x:Key="SuccessTextStrong" ResourceKey="SuccessTextStrongDark"/>
+                            <StaticResource x:Key="SuccessTextDeep" ResourceKey="SuccessTextDeepDark"/>
+                            <StaticResource x:Key="SuccessTextMedium" ResourceKey="SuccessTextMediumDark"/>
+                            <StaticResource x:Key="InfoTintBrush" ResourceKey="InfoTintDark"/>
+                        </ResourceDictionary>
+
+                        <ResourceDictionary x:Key="HighContrast">
+                            <ResourceDictionary.MergedDictionaries>
+                                <ResourceDictionary Source="AppColors.xaml"/>
+                            </ResourceDictionary.MergedDictionaries>
+                            <StaticResource x:Key="TextPrimary" ResourceKey="TextPrimaryLight"/>
+                            <StaticResource x:Key="TextSecondary" ResourceKey="TextSecondaryLight"/>
+                            <StaticResource x:Key="TextTertiary" ResourceKey="TextTertiaryLight"/>
+                            <StaticResource x:Key="TextFaint" ResourceKey="TextFaintLight"/>
+                            <StaticResource x:Key="SurfaceBackground" ResourceKey="SurfaceBackgroundLight"/>
+                            <StaticResource x:Key="CardBackground" ResourceKey="CardBackgroundLight"/>
+                            <StaticResource x:Key="NeutralCard" ResourceKey="NeutralCardLight"/>
+                            <StaticResource x:Key="NeutralBorder" ResourceKey="NeutralBorderLight"/>
+                            <StaticResource x:Key="StatusIdle" ResourceKey="StatusIdleLight"/>
+                            <StaticResource x:Key="SuccessTintBrush" ResourceKey="SuccessTintLight"/>
+                            <StaticResource x:Key="SuccessTextStrong" ResourceKey="SuccessTextStrongLight"/>
+                            <StaticResource x:Key="SuccessTextDeep" ResourceKey="SuccessTextDeepLight"/>
+                            <StaticResource x:Key="SuccessTextMedium" ResourceKey="SuccessTextMediumLight"/>
+                            <StaticResource x:Key="InfoTintBrush" ResourceKey="InfoTintLight"/>
+                        </ResourceDictionary>
+                    </ui:ThemeResources.ThemeDictionaries>
+                </ui:ThemeResources>
+
                 <ui:XamlControlsResources/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

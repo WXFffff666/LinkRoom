@@ -13,100 +13,115 @@
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <Style x:Key="SectionCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource NeutralBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
 
         <DockPanel Grid.Row="0" Margin="12,6" LastChildFill="False">
-            <Button Content="{x:Static res:Strings.MainSettings}" FontSize="11" Foreground="#8E8E93" Background="Transparent"
+            <Button Content="{x:Static res:Strings.MainSettings}" FontSize="11" Foreground="{DynamicResource TextTertiary}" Background="Transparent"
                     BorderThickness="0" Click="OpenSettings_Click" Cursor="Hand" Margin="0,0,4,0"/>
-            <Button Content="{x:Static res:Strings.MainRooms}" FontSize="11" Foreground="#8E8E93" Background="Transparent"
+            <Button Content="{x:Static res:Strings.MainRooms}" FontSize="11" Foreground="{DynamicResource TextTertiary}" Background="Transparent"
                     BorderThickness="0" Click="OpenPeerList_Click" Cursor="Hand" Margin="0,0,4,0"/>
-            <Button Content="{x:Static res:Strings.MainLog}" FontSize="11" Foreground="#8E8E93" Background="Transparent"
+            <Button Content="{x:Static res:Strings.MainLog}" FontSize="11" Foreground="{DynamicResource TextTertiary}" Background="Transparent"
                     BorderThickness="0" Click="OpenLog_Click" Cursor="Hand" Margin="0,0,4,0"/>
-            <Button Content="{x:Static res:Strings.MainUpdate}" FontSize="11" Foreground="#007AFF" Background="Transparent"
+            <Button Content="{x:Static res:Strings.MainUpdate}" FontSize="11" Foreground="{DynamicResource BrandBlue}" Background="Transparent"
                     BorderThickness="0" Click="UpdateCheck_Click" Cursor="Hand" DockPanel.Dock="Right"/>
         </DockPanel>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-        <StackPanel VerticalAlignment="Top" Margin="32,0">
-            <TextBlock Text="{x:Static res:Strings.MainTitle}" FontSize="24" FontWeight="Bold" Foreground="#1D1D1F" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-            <TextBlock Text="{x:Static res:Strings.MainTagline}" FontSize="11" Foreground="#8E8E93" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+        <StackPanel VerticalAlignment="Top" Margin="32,0,32,8">
+            <TextBlock Text="{x:Static res:Strings.MainTitle}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+            <TextBlock Text="{x:Static res:Strings.MainTagline}" FontSize="11" Foreground="{DynamicResource TextTertiary}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
 
             <!-- Host mode toggle -->
             <CheckBox Content="{x:Static res:Strings.MainHostMode}" IsChecked="{Binding IsHostMode}"
                       HorizontalAlignment="Center" Margin="0,0,0,12"/>
 
-            <TextBlock Text="{x:Static res:Strings.MainRoomLabel}" FontSize="12" Foreground="#8E8E93" Margin="0,0,0,6"/>
-            <TextBox FontSize="14" Padding="12,10" Text="{Binding RoomId, UpdateSourceTrigger=PropertyChanged}"
-                     BorderBrush="#E5E5EA" ToolTip="{x:Static res:Strings.MainRoomToolTip}"/>
+            <!-- Room section -->
+            <Border Style="{StaticResource SectionCardStyle}">
+                <StackPanel>
+                    <TextBlock Text="{x:Static res:Strings.MainRoomLabel}" FontSize="12" Foreground="{DynamicResource TextTertiary}" Margin="0,0,0,6"/>
+                    <TextBox FontSize="14" Padding="12,10" Text="{Binding RoomId, UpdateSourceTrigger=PropertyChanged}"
+                             BorderBrush="{DynamicResource NeutralBorder}" ToolTip="{x:Static res:Strings.MainRoomToolTip}"/>
 
-            <!-- Room history -->
-            <ItemsControl ItemsSource="{Binding RoomHistory}" Margin="0,6,0,0">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Button Content="{Binding}" Tag="{Binding}" Click="History_Click"
-                                FontSize="10" Padding="6,2" Margin="0,0,4,4" Background="#F5F5F7" BorderBrush="#E5E5EA"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                    <!-- Room history -->
+                    <ItemsControl ItemsSource="{Binding RoomHistory}" Margin="0,8,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding}" Tag="{Binding}" Click="History_Click"
+                                        FontSize="10" Padding="6,2" Margin="0,0,4,4"
+                                        Background="{DynamicResource NeutralCard}" BorderBrush="{DynamicResource NeutralBorder}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-            <TextBlock Text="{x:Static res:Strings.MainPasswordLabel}" FontSize="12" Foreground="#8E8E93" Margin="0,10,0,4"/>
-            <PasswordBox FontSize="14" Padding="12,10" x:Name="PasswordBox" PasswordChanged="PasswordBox_PasswordChanged"
-                         BorderBrush="#E5E5EA"/>
-            <TextBlock Text="{Binding PasswordStrengthHint}" FontSize="10" Foreground="#FF9500" Margin="0,4,0,0"/>
+                    <TextBlock Text="{x:Static res:Strings.MainPasswordLabel}" FontSize="12" Foreground="{DynamicResource TextTertiary}" Margin="0,10,0,4"/>
+                    <PasswordBox FontSize="14" Padding="12,10" x:Name="PasswordBox" PasswordChanged="PasswordBox_PasswordChanged"
+                                 BorderBrush="{DynamicResource NeutralBorder}"/>
+                    <TextBlock Text="{Binding PasswordStrengthHint}" FontSize="10" Foreground="{DynamicResource WarningOrange}" Margin="0,4,0,0"/>
 
-            <Grid Margin="0,16,0,0">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Content="{x:Static res:Strings.MainCreateButton}" Height="44" FontSize="14" FontWeight="SemiBold"
-                        Command="{Binding CreateRoomCommand}"
-                        Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
-                <Button Grid.Column="2" Content="{x:Static res:Strings.MainConnectButton}" Height="44" FontSize="14" FontWeight="SemiBold"
-                        Command="{Binding ConnectCommand}"
-                        Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
-            </Grid>
-            <Button Content="{x:Static res:Strings.MainDisconnectButton}" Height="36" FontSize="13" Margin="0,8,0,0"
-                    Command="{Binding DisconnectCommand}"
-                    Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="{x:Static res:Strings.MainCreateButton}" Height="44" FontSize="14" FontWeight="SemiBold"
+                                Command="{Binding CreateRoomCommand}"
+                                Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
+                        <Button Grid.Column="2" Content="{x:Static res:Strings.MainConnectButton}" Height="44" FontSize="14" FontWeight="SemiBold"
+                                Command="{Binding ConnectCommand}"
+                                Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
+                    </Grid>
+                    <Button Content="{x:Static res:Strings.MainDisconnectButton}" Height="36" FontSize="13" Margin="0,8,0,0"
+                            Command="{Binding DisconnectCommand}"
+                            Style="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"/>
+                </StackPanel>
+            </Border>
 
             <!-- Connection progress -->
-            <StackPanel Margin="0,8,0,0" Visibility="{Binding IsProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel Margin="0,10,0,0" Visibility="{Binding IsProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <ProgressBar Height="6" Minimum="0" Maximum="100" Value="{Binding ProgressValue}"/>
-                <TextBlock Text="{Binding ProgressText}" FontSize="10" Foreground="#8E8E93" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                <TextBlock Text="{Binding ProgressText}" FontSize="10" Foreground="{DynamicResource TextTertiary}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
             </StackPanel>
 
-            <Border Background="#E8F5E9" CornerRadius="8" Padding="12" Margin="0,12,0,0"
+            <!-- Created room -->
+            <Border Style="{StaticResource SectionCardStyle}" Background="{DynamicResource SuccessTintBrush}"
+                    BorderThickness="0" Margin="0,12,0,0"
                     x:Name="CreatedRoomPanel" Visibility="Collapsed">
                 <StackPanel>
-                    <TextBlock Text="{x:Static res:Strings.MainRoomCreated}" FontSize="13" FontWeight="SemiBold" Foreground="#2E7D32"/>
-                    <TextBox x:Name="CreatedRoomId" FontSize="16" FontWeight="Bold" Foreground="#1B5E20"
+                    <TextBlock Text="{x:Static res:Strings.MainRoomCreated}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource SuccessTextStrong}"/>
+                    <TextBox x:Name="CreatedRoomId" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource SuccessTextDeep}"
                              IsReadOnly="True" BorderThickness="0" Background="Transparent"
                              MouseDoubleClick="CreatedRoomId_DoubleClick" ToolTip="{x:Static res:Strings.MainCopyRoomIdTip}"/>
-                    <TextBox x:Name="LinkCodeText" FontSize="10" Foreground="#388E3C"
+                    <TextBox x:Name="LinkCodeText" FontSize="10" Foreground="{DynamicResource SuccessTextMedium}"
                              IsReadOnly="True" BorderThickness="0" Background="Transparent" TextWrapping="Wrap"
                              MouseDoubleClick="LinkCode_DoubleClick" ToolTip="{x:Static res:Strings.MainCopyLinkTip}"/>
                     <StackPanel x:Name="QrCodePanel" Orientation="Horizontal" Margin="0,8,0,0" Visibility="Collapsed">
                         <Image x:Name="QrCodeImage" Width="96" Height="96" Margin="0,0,8,0"/>
-                        <TextBlock Text="{Binding ShortLinkText}" FontSize="9" Foreground="#388E3C" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding ShortLinkText}" FontSize="9" Foreground="{DynamicResource SuccessTextMedium}" TextWrapping="Wrap" VerticalAlignment="Center"/>
                     </StackPanel>
                     <Button Content="{x:Static res:Strings.MainCopyLinkButton}" Command="{Binding CopyLinkCodeCommand}" Margin="0,6,0,0" Height="28"/>
                 </StackPanel>
             </Border>
 
             <!-- Connection quality dashboard -->
-            <Border Background="#F5F5F7" CornerRadius="8" Padding="10" Margin="0,12,0,0">
+            <Border Style="{StaticResource SectionCardStyle}" Background="{DynamicResource NeutralCard}" BorderThickness="0" Margin="0,12,0,0">
                 <StackPanel>
-                    <TextBlock Text="{Binding ConnectionQuality}" FontSize="12" FontWeight="SemiBold" Foreground="#1D1D1F"/>
-                    <TextBlock Text="{Binding TrafficRateText}" FontSize="10" Foreground="#6E6E73" Margin="0,2,0,0"/>
-                    <TextBlock FontSize="10" Foreground="#8E8E93" Margin="0,4,0,0">
+                    <TextBlock Text="{Binding ConnectionQuality}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{Binding TrafficRateText}" FontSize="10" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                    <TextBlock FontSize="10" Foreground="{DynamicResource TextTertiary}" Margin="0,4,0,0">
                         <Run Text="{x:Static res:Strings.MainNatPrefix}"/><Run Text="{Binding NatType, Mode=OneWay}"/>
                         <Run Text="{x:Static res:Strings.MainPublicSuffix}"/><Run Text="{Binding Ipv4, Mode=OneWay}"/>
                     </TextBlock>
-                    <TextBlock FontSize="10" Foreground="#8E8E93" Margin="0,2,0,0">
+                    <TextBlock FontSize="10" Foreground="{DynamicResource TextTertiary}" Margin="0,2,0,0">
                         <Run Text="{x:Static res:Strings.MainVipPrefix}"/><Run Text="{Binding VirtualIpv4, Mode=OneWay}"/>
                         <Run Text="{x:Static res:Strings.MainIpv6Suffix}"/><Run Text="{Binding VirtualIpv6, Mode=OneWay}"/>
                     </TextBlock>
@@ -115,18 +130,19 @@
                         <Button Content="{x:Static res:Strings.MainSpeedTestButton}" Height="24" FontSize="10" Padding="8,0"
                                 Command="{Binding SpeedTestCommand}"/>
                     </StackPanel>
-                    <TextBlock Text="{Binding PortForwardHint}" FontSize="10" Foreground="#007AFF" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding PathDiagram}" FontSize="9" Foreground="#6E6E73" FontFamily="Consolas"
+                    <TextBlock Text="{Binding PortForwardHint}" FontSize="10" Foreground="{DynamicResource BrandBlue}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding PathDiagram}" FontSize="9" Foreground="{DynamicResource TextSecondary}" FontFamily="Consolas"
                                Margin="0,6,0,0" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
 
             <!-- Game process auto-detection + one-click host -->
-            <Border Background="#F0F4FF" CornerRadius="8" Padding="10" Margin="0,12,0,0">
+            <Border Style="{StaticResource SectionCardStyle}" Background="{DynamicResource InfoTintBrush}"
+                    BorderThickness="0" Margin="0,12,0,0">
                 <StackPanel>
                     <Button Content="{x:Static res:Strings.MainDetectGameButton}" Height="30" FontSize="12" Padding="12,0"
                             HorizontalAlignment="Left" Command="{Binding DetectGameCommand}"/>
-                    <TextBlock Text="{Binding GameDetectResult}" FontSize="10" Foreground="#007AFF"
+                    <TextBlock Text="{Binding GameDetectResult}" FontSize="10" Foreground="{DynamicResource BrandBlue}"
                                Margin="0,6,0,0" TextWrapping="Wrap"/>
                     <ItemsControl ItemsSource="{Binding DetectedGames}" Margin="0,4,0,0">
                         <ItemsControl.ItemTemplate>
@@ -142,39 +158,41 @@
             </Border>
 
             <!-- In-room chat (virtual network) -->
-            <Expander Header="{x:Static res:Strings.MainChatHeader}" Margin="0,10,0,0">
-                <StackPanel Margin="0,6,0,0">
-                    <ListBox ItemsSource="{Binding ChatLines}" Height="140" FontSize="11"
-                             BorderBrush="#E5E5EA"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                    <Grid Margin="0,6,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" x:Name="ChatInputBox"
-                                 Text="{Binding ChatInput, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="12" Padding="8,6" MaxLength="1024"
-                                 KeyDown="ChatInput_KeyDown" BorderBrush="#E5E5EA"/>
-                        <Button Grid.Column="1" Content="{x:Static res:Strings.MainSendButton}" Margin="6,0,0,0" Padding="10,6" FontSize="12"
-                                Command="{Binding SendChatCommand}"/>
-                    </Grid>
-                </StackPanel>
-            </Expander>
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,12,0,0">
+                <Expander Header="{x:Static res:Strings.MainChatHeader}">
+                    <StackPanel Margin="0,6,0,0">
+                        <ListBox ItemsSource="{Binding ChatLines}" Height="140" FontSize="11"
+                                 BorderBrush="{DynamicResource NeutralBorder}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" x:Name="ChatInputBox"
+                                     Text="{Binding ChatInput, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="12" Padding="8,6" MaxLength="1024"
+                                     KeyDown="ChatInput_KeyDown" BorderBrush="{DynamicResource NeutralBorder}"/>
+                            <Button Grid.Column="1" Content="{x:Static res:Strings.MainSendButton}" Margin="6,0,0,0" Padding="10,6" FontSize="12"
+                                    Command="{Binding SendChatCommand}"/>
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+            </Border>
 
-            <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="#8E8E93" HorizontalAlignment="Center"
-                       Margin="0,10,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
+            <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{DynamicResource TextTertiary}" HorizontalAlignment="Center"
+                       Margin="0,12,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
 
             <ItemsControl ItemsSource="{Binding Peers}" Margin="0,8,0,0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="#F5F5F7" CornerRadius="6" Padding="8,6" Margin="0,2">
-                            <TextBlock FontSize="11" Foreground="#6E6E73" Text="{Binding}" TextWrapping="Wrap"/>
+                        <Border Background="{DynamicResource NeutralCard}" CornerRadius="6" Padding="8,6" Margin="0,2">
+                            <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" Text="{Binding}" TextWrapping="Wrap"/>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -184,9 +202,9 @@
 
         <Border Grid.Row="2" Padding="8,6" Background="Transparent">
             <DockPanel>
-                <TextBlock x:Name="UpdateLabel" FontSize="10" Foreground="#C7C7CC" DockPanel.Dock="Right"
+                <TextBlock x:Name="UpdateLabel" FontSize="10" Foreground="{DynamicResource TextFaint}" DockPanel.Dock="Right"
                            Cursor="Hand" MouseDown="UpdateLabel_MouseDown" ToolTip="{x:Static res:Strings.MainCheckUpdateTip}"/>
-                <TextBlock Text="{Binding StatusDetail}" FontSize="10" Foreground="#C7C7CC" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding StatusDetail}" FontSize="10" Foreground="{DynamicResource TextFaint}" TextWrapping="Wrap"/>
             </DockPanel>
         </Border>
     </Grid>

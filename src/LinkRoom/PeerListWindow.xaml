@@ -10,19 +10,19 @@
     <Grid Margin="12">
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <DockPanel Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock Text="{x:Static res:Strings.PeerHeader}" FontSize="16" FontWeight="Bold" Foreground="#1D1D1F"/>
+            <TextBlock Text="{x:Static res:Strings.PeerHeader}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
             <Button Content="{x:Static res:Strings.PeerPingAll}" DockPanel.Dock="Right" Height="28" Padding="8,0" Click="PingAll_Click"/>
         </DockPanel>
-        <ListBox Grid.Row="1" x:Name="PeerList" BorderBrush="#E5E5EA" Background="White">
+        <ListBox Grid.Row="1" x:Name="PeerList" BorderBrush="{DynamicResource NeutralBorder}" Background="{DynamicResource CardBackground}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Border Background="#F5F5F7" CornerRadius="6" Padding="8,6" Margin="0,2">
-                        <TextBlock FontSize="11" Foreground="#6E6E73" Text="{Binding}" TextWrapping="Wrap"/>
+                    <Border Background="{DynamicResource NeutralCard}" CornerRadius="6" Padding="8,6" Margin="0,2">
+                        <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondary}" Text="{Binding}" TextWrapping="Wrap"/>
                     </Border>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <TextBlock Grid.Row="2" x:Name="PeerHint" FontSize="10" Foreground="#8E8E93" Margin="0,8,0,0"
+        <TextBlock Grid.Row="2" x:Name="PeerHint" FontSize="10" Foreground="{DynamicResource TextTertiary}" Margin="0,8,0,0"
                    Text="{x:Static res:Strings.PeerHint}"/>
     </Grid>
 </Window>

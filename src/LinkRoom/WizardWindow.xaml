@@ -4,15 +4,29 @@
         xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
         xmlns:res="clr-namespace:LinkRoom.Core.Resources;assembly=LinkRoom.Core"
         ui:WindowHelper.UseModernWindowStyle="True"
-        Title="{x:Static res:Strings.WizardTitle}" Height="420" Width="400"
+        Title="{x:Static res:Strings.WizardTitle}" Height="440" Width="420"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <StackPanel Margin="32,24">
-        <TextBlock x:Name="StepTitle" Text="{x:Static res:Strings.WizardStep1Title}" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"/>
-        <TextBlock x:Name="StepDesc" Text="{x:Static res:Strings.WizardStep1Desc}" TextWrapping="Wrap" Foreground="#666" Margin="0,0,0,16"/>
-        <CheckBox x:Name="LanModeCheck" Content="{x:Static res:Strings.WizardLanMode}" Margin="0,0,0,8"/>
-        <CheckBox x:Name="AutoUpdateCheck" Content="{x:Static res:Strings.WizardAutoUpdate}" IsChecked="True" Margin="0,0,0,8"/>
-        <CheckBox x:Name="PortableCheck" Content="{x:Static res:Strings.WizardPortable}" IsChecked="True" Margin="0,0,0,24"/>
-        <ProgressBar x:Name="WizardProgress" Height="4" Maximum="3" Value="1" Margin="0,0,0,16"/>
+        <TextBlock x:Name="StepTitle" Text="{x:Static res:Strings.WizardStep1Title}" FontSize="20" FontWeight="Bold"
+                   Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+
+        <!-- Step indicator -->
+        <Border Background="{DynamicResource NeutralCard}" CornerRadius="8" Padding="8,6" Margin="0,0,0,12">
+            <ProgressBar x:Name="WizardProgress" Height="4" Maximum="3" Value="1"/>
+        </Border>
+
+        <TextBlock x:Name="StepDesc" Text="{x:Static res:Strings.WizardStep1Desc}" FontSize="12" TextWrapping="Wrap"
+                   Foreground="{DynamicResource TextTertiary}" Margin="0,0,0,16"/>
+
+        <Border Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource NeutralBorder}"
+                BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,16">
+            <StackPanel>
+                <CheckBox x:Name="LanModeCheck" Content="{x:Static res:Strings.WizardLanMode}" FontSize="12" Margin="0,0,0,8"/>
+                <CheckBox x:Name="AutoUpdateCheck" Content="{x:Static res:Strings.WizardAutoUpdate}" IsChecked="True" FontSize="12" Margin="0,0,0,8"/>
+                <CheckBox x:Name="PortableCheck" Content="{x:Static res:Strings.WizardPortable}" IsChecked="True" FontSize="12"/>
+            </StackPanel>
+        </Border>
+
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="{x:Static res:Strings.WizardSkip}" Width="80" Margin="0,0,8,0" Click="Skip_Click"/>
             <Button Content="{x:Static res:Strings.WizardNext}" Width="80" Click="Next_Click"
