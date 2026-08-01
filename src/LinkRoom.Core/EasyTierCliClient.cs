@@ -50,6 +50,35 @@ public sealed class EasyTierCliClient
         return Deserialize<NodeInfo>(json);
     }
 
+    /// <summary>
+    /// Reads the instance's cumulative rx/tx byte counters from
+    /// `stats show --output json` (spike: SPIKE-TRAFFIC.md §2.4). Prefers
+    /// traffic_bytes_self_rx/self_tx (own traffic, not relayed-for-others);
+    /// falls back to traffic_bytes_rx/tx if the self variants are absent.
+    /// Returns null when the counters are unavailable (older core, degraded mode).
+    /// </summary>
+    public async Task<TrafficStats?> GetTrafficStatsAsync(CancellationToken ct = default)
+    {
+        var json = await RunCliAsync("stats show", ct);
+        var metrics = Deserialize<TrafficMetric[]>(json);
+        if (metrics == null || metrics.Length == 0) return null;
+
+        ulong? rx = PickValue(metrics, "traffic_bytes_self_rx", "traffic_bytes_rx");
+        ulong? tx = PickValue(metrics, "traffic_bytes_self_tx", "traffic_bytes_tx");
+        if (rx == null || tx == null) return null;
+        return new TrafficStats(rx.Value, tx.Value);
+    }
+
+    private static ulong? PickValue(TrafficMetric[] metrics, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var v = metrics.FirstOrDefault(m => m.Name == name)?.Value;
+            if (v != null) return v;
+        }
+        return null;
+    }
+
     private async Task<string> RunCliAsync(string subcommand, CancellationToken ct)
     {
         if (!File.Exists(_easytierCliPath))
@@ -190,9 +219,11 @@ public record PeerInfo
     public string? NatType { get; init; }
 
     [JsonPropertyName("lat_ms")]
+    [JsonConverter(typeof(LenientNumberConverter))]
     public double? LatencyMs { get; init; }
 
     [JsonPropertyName("loss_rate")]
+    [JsonConverter(typeof(LenientNumberConverter))]
     public double? LossRate { get; init; }
 
     [JsonPropertyName("ipv4")]
@@ -206,6 +237,67 @@ public record PeerInfo
 
     [JsonPropertyName("instance_id")]
     public string? InstanceId { get; init; }
+
+    // NOTE (spike SPIKE-TRAFFIC.md §2.1/§3): easytier-cli serializes rx_bytes/
+    // tx_bytes as human-formatted STRINGS ("0 B", "1.5 KB", "-"), not raw byte
+    // counts — ulong would throw. Raw u64 counters come from stats show instead
+    // (GetTrafficStatsAsync). Kept as string? to mirror the wire format without
+    // breaking deserialization of the whole peer array.
+    [JsonPropertyName("rx_bytes")]
+    public string? RxBytes { get; init; }
+
+    [JsonPropertyName("tx_bytes")]
+    public string? TxBytes { get; init; }
+}
+
+/// <summary>
+/// One metric entry from `easytier-cli stats show --output json` — value is a
+/// raw u64 counter (spike SPIKE-TRAFFIC.md §2.4).
+/// </summary>
+public record TrafficMetric
+{
+    [JsonPropertyName("name")]
+    public string? Name { get; init; }
+
+    [JsonPropertyName("value")]
+    public ulong? Value { get; init; }
+}
+
+/// <summary>
+/// Cumulative rx/tx byte counters of the local instance (from stats show).
+/// </summary>
+public record TrafficStats(ulong RxBytes, ulong TxBytes);
+
+/// <summary>
+/// Tolerates easytier-cli's lenient numeric formatting: JSON numbers, plain
+/// string numbers ("12.34"), percent strings ("0.5%" — divided by 100), and
+/// "-" (no data) which maps to null. Without this the whole peer array fails
+/// to deserialize on the Local row ("-"), a latent bug in the old double?
+/// parsing.
+/// </summary>
+public sealed class LenientNumberConverter : System.Text.Json.Serialization.JsonConverter<double?>
+{
+    public override double? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        switch (reader.TokenType)
+        {
+            case JsonTokenType.Number:
+                return reader.GetDouble();
+            case JsonTokenType.String:
+                var s = reader.GetString();
+                if (string.IsNullOrWhiteSpace(s) || s == "-") return null;
+                if (s.EndsWith('%') && double.TryParse(s[..^1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var pct))
+                    return pct / 100.0;
+                if (double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v))
+                    return v;
+                return null;
+            default:
+                return null;
+        }
+    }
+
+    public override void Write(Utf8JsonWriter writer, double? value, JsonSerializerOptions options)
+        => JsonSerializer.Serialize(writer, value, options);
 }
 
 /// <summary>

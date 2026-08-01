@@ -35,6 +35,12 @@ internal sealed class ConnectFlowService
     RoomOptions? _lastRoom;
     bool _prevRelayMode;
 
+    // Previous rx/tx sample + sample timestamp for diff-based rate computation
+    // (spike SPIKE-TRAFFIC.md §2.4). null until the first stats sample arrives.
+    TrafficStats? _prevTraffic;
+    DateTime _prevTrafficAt;
+    bool _trafficStatsLoggedFailure;
+
     public ConnectFlowService(
         MainViewModel vm,
         EasyTierConfigBuilder cfg, EasyTierProcessService proc, EasyTierCliClient cli,
@@ -280,6 +286,35 @@ internal sealed class ConnectFlowService
                     }
                     _prevRelayMode = isRelay;
                     if (_sm.CurrentState == ConnectionState.Connected) _sm.Monitoring();
+                }
+
+                // rx/tx traffic rate (spike SPIKE-TRAFFIC.md): diff of two
+                // cumulative stats-show samples over the elapsed time. First
+                // sample (no prev) yields 0; a counter reset yields 0 too.
+                // Best-effort: older cores without `stats show` degrade to no
+                // rate segment — never fabricated data.
+                try
+                {
+                    var stats = await _cli.GetTrafficStatsAsync(ct);
+                    if (stats != null)
+                    {
+                        var now = DateTime.UtcNow;
+                        var elapsed = _prevTraffic == null ? 0 : (now - _prevTrafficAt).TotalSeconds;
+                        var rxRate = TrafficRateCalculator.ComputeRate(_prevTraffic?.RxBytes, stats.RxBytes, elapsed);
+                        var txRate = TrafficRateCalculator.ComputeRate(_prevTraffic?.TxBytes, stats.TxBytes, elapsed);
+                        _prevTraffic = stats;
+                        _prevTrafficAt = now;
+                        _vm.TrafficRateText = $"↓ {TrafficRateCalculator.FormatRate(rxRate)} ↑ {TrafficRateCalculator.FormatRate(txRate)}";
+                        _trafficStatsLoggedFailure = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (!_trafficStatsLoggedFailure)
+                    {
+                        _vm.L($"流量统计不可用（降级，不显示速率）: {ex.Message}");
+                        _trafficStatsLoggedFailure = true;
+                    }
                 }
             }
             catch (OperationCanceledException) { break; }

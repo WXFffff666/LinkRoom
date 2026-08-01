@@ -100,6 +100,7 @@
             <Border Background="#F5F5F7" CornerRadius="8" Padding="10" Margin="0,12,0,0">
                 <StackPanel>
                     <TextBlock Text="{Binding ConnectionQuality}" FontSize="12" FontWeight="SemiBold" Foreground="#1D1D1F"/>
+                    <TextBlock Text="{Binding TrafficRateText}" FontSize="10" Foreground="#6E6E73" Margin="0,2,0,0"/>
                     <TextBlock FontSize="10" Foreground="#8E8E93" Margin="0,4,0,0">
                         <Run Text="NAT: "/><Run Text="{Binding NatType, Mode=OneWay}"/>
                         <Run Text=" | 公网: "/><Run Text="{Binding Ipv4, Mode=OneWay}"/>

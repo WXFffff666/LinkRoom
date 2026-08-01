@@ -100,6 +100,7 @@ internal sealed class RoomSessionService
         EasyTierProcessService.KillOrphanProcesses();
         _vm.IsRelayMode = false;
         _vm.ConnectionQuality = "";
+        _vm.TrafficRateText = "";
         _vm.PortForwardHint = "";
         _vm.PathDiagram = "";
         _vm.StatusText = "已断开";

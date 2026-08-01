@@ -44,7 +44,7 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty] string _roomId = "", _password = "", _connState = "Idle", _connType = "";
     [ObservableProperty] string _natType = "", _ipv4 = "", _ipv6 = "", _virtualIpv4 = "", _virtualIpv6 = "";
-    [ObservableProperty] string _latency = "", _lossRate = "", _connectionQuality = "";
+    [ObservableProperty] string _latency = "", _lossRate = "", _connectionQuality = "", _trafficRateText = "";
     [ObservableProperty] int _peerCount;
     [ObservableProperty] bool _isRelayMode, _isSharedNodeEnabled;
     [ObservableProperty] string _sharedNodeUrls = AppPaths.DefaultSharedNode, _logLevel = "Info";
