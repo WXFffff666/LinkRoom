@@ -22,14 +22,26 @@ public sealed class SettingsService
         RegexOptions.Compiled);
 
     static readonly Regex SecretRegex = new(
-        @"(pass(?:word)?[=:\s]+)(\S+)",
+        @"(pass(?:word)?[=:\s""]+)(\S+)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public SettingsService()
+    public SettingsService() : this(null) { }
+
+    /// <summary>Optional custom settings path (used by tests to isolate from AppPaths).</summary>
+    public SettingsService(string? settingsPath)
     {
-        AppPaths.EnsureDataDirectories();
-        _settingsPath = AppPaths.SettingsPath;
+        if (settingsPath == null)
+        {
+            AppPaths.EnsureDataDirectories();
+            _settingsPath = AppPaths.SettingsPath;
+        }
+        else
+        {
+            _settingsPath = settingsPath;
+        }
     }
+
+    public string SettingsPath => _settingsPath;
 
     public AppSettings Load()
     {
