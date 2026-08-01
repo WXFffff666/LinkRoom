@@ -23,6 +23,8 @@ public sealed class EasyTierCliClient
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip,
     };
 
+    private const int MaxOutputChars = 10 * 1024 * 1024; // 10 MB cap, enforced while streaming
+
     public EasyTierCliClient(string easytierCliPath, string rpcPortal, ILogger<EasyTierCliClient> logger)
     {
         _easytierCliPath = easytierCliPath;
@@ -70,37 +72,78 @@ public sealed class EasyTierCliClient
         };
 
         using var process = new Process { StartInfo = psi };
-        var output = new System.Text.StringBuilder();
+        var stdout = new System.Text.StringBuilder();
+        var stderr = new System.Text.StringBuilder();
 
         process.Start();
 
-        // Read with timeout — limit output to 10MB to prevent memory exhaustion
-        var readTask = process.StandardOutput.ReadToEndAsync();
-        var completed = await Task.WhenAny(readTask, Task.Delay(TimeSpan.FromSeconds(15), ct));
+        // Drain stdout and stderr concurrently: a child that floods stderr past
+        // the ~4KB pipe buffer would block forever and deadlock WaitForExitAsync
+        // if stderr were only read after the process exits (BUG-4).
+        var stdoutTask = ReadStdoutAsync(process, stdout, ct);
+        var stderrTask = ReadStderrAsync(process, stderr, ct);
 
-        if (completed != readTask)
+        var waitTask = process.WaitForExitAsync(ct);
+        try
         {
-            try { process.Kill(entireProcessTree: true); } catch { }
-            throw new TimeoutException("easytier-cli command timed out after 15 seconds.");
+            var completed = await Task.WhenAny(waitTask, Task.Delay(TimeSpan.FromSeconds(15), ct));
+            if (completed != waitTask)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+                throw new TimeoutException("easytier-cli command timed out after 15 seconds.");
+            }
+
+            await waitTask;
+            await Task.WhenAll(stdoutTask, stderrTask);
+
+            if (process.ExitCode != 0)
+            {
+                _logger.LogWarning("easytier-cli exited with code {Code}: {Error}", process.ExitCode, stderr.ToString());
+                throw new InvalidOperationException($"easytier-cli failed (exit code {process.ExitCode})");
+            }
+
+            return stdout.ToString();
         }
-
-        var stdout = await readTask;
-        await process.WaitForExitAsync(ct);
-
-        if (process.ExitCode != 0)
+        finally
         {
-            var stderr = await process.StandardError.ReadToEndAsync();
-            _logger.LogWarning("easytier-cli exited with code {Code}: {Error}", process.ExitCode, stderr);
-            throw new InvalidOperationException($"easytier-cli failed (exit code {process.ExitCode})");
+            // Ensure no read task is left dangling on any exit path (timeout,
+            // size cap, cancellation): killing the tree closes the pipes, which
+            // lets both readers finish.
+            if (!process.HasExited)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+            }
+            try { await Task.WhenAll(stdoutTask, stderrTask); } catch { /* preserve primary exception */ }
+            try { await waitTask; } catch { /* observe cancellation */ }
         }
+    }
 
-        // Limit output size
-        if (stdout.Length > 10 * 1024 * 1024)
+    private static async Task ReadStdoutAsync(Process process, System.Text.StringBuilder stdout, CancellationToken ct)
+    {
+        while (await process.StandardOutput.ReadLineAsync(ct) is { } line)
         {
-            throw new InvalidOperationException($"easytier-cli output exceeded 10 MB limit ({stdout.Length} bytes)");
-        }
+            stdout.Append(line).Append('\n');
 
-        return stdout;
+            // Enforce the 10MB cap while streaming, before memory can grow
+            // unbounded (BUG-3): kill immediately and fail the command.
+            if (stdout.Length > MaxOutputChars)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+                throw new InvalidOperationException(
+                    $"easytier-cli output exceeded 10 MB limit ({stdout.Length} chars)");
+            }
+        }
+    }
+
+    private static async Task ReadStderrAsync(Process process, System.Text.StringBuilder stderr, CancellationToken ct)
+    {
+        while (await process.StandardError.ReadLineAsync(ct) is { } line)
+        {
+            // Cap stderr accumulation but always keep draining so the child
+            // never blocks on a full pipe.
+            if (stderr.Length < MaxOutputChars)
+                stderr.Append(line).Append('\n');
+        }
     }
 
     private static T? Deserialize<T>(string json) where T : class
