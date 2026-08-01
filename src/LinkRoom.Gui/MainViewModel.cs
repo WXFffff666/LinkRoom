@@ -33,6 +33,7 @@ public partial class MainViewModel : ObservableObject
     readonly ProcessGuardian _guardian;
     readonly ILogger<MainViewModel> _log;
     readonly LogBuffer _logBuffer;
+    readonly ReconnectOrchestrator _reconnectOrch = new();
 
     CancellationTokenSource? _mon;
     IMainWindowView? _win;
@@ -118,12 +119,20 @@ public partial class MainViewModel : ObservableObject
         return dispatcher.InvokeAsync(f).Task.Unwrap();
     }
 
+    // Single reconnect orchestrator (BUG-5): every reconnect path funnels through
+    // this wrapper so at most one ConnectInternalAsync(isReconnect: true) executes
+    // at a time. Requests arriving while one is running coalesce — the later caller
+    // is skipped when the process is already back, preventing the old livelock where
+    // the guardian callback and AutoReconnectService both killed each other's core.
+    Task ReconnectOnceAsync(Func<Task> reconnect)
+        => _reconnectOrch.RunOnceAsync(reconnect, () => _proc.IsRunning);
+
     // AutoReconnectService runs its backoff loop on the thread pool —
     // the reconnect must execute on the UI thread (BUG-2 fix).
     async Task ReconnectAsync(CancellationToken ct)
     {
         if (_lastRoom == null) return;
-        await UiAsync(() => ConnectInternalAsync(_lastRoom, isReconnect: true));
+        await ReconnectOnceAsync(() => UiAsync(() => ConnectInternalAsync(_lastRoom, isReconnect: true)));
     }
 
     public void SetWindow(IMainWindowView w) => _win = w;
@@ -336,8 +345,13 @@ public partial class MainViewModel : ObservableObject
             // guardian's own catch (BUG-2 fix).
             _guardian.Start(() => UiAsync(async () =>
             {
+                // While the state machine is already Reconnecting, AutoReconnectService
+                // owns recovery — a guardian fire would only race it (BUG-5).
+                if (_sm.CurrentState is not (ConnectionState.Connected or ConnectionState.Monitoring))
+                    return;
                 L("EasyTier 进程异常，尝试恢复...");
-                if (_lastRoom != null) await ConnectInternalAsync(_lastRoom, isReconnect: true);
+                if (_lastRoom != null)
+                    await ReconnectOnceAsync(() => ConnectInternalAsync(_lastRoom, isReconnect: true));
             }));
 
             await (_mon?.CancelAsync() ?? Task.CompletedTask);

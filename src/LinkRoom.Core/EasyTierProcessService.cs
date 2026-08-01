@@ -9,7 +9,7 @@ namespace LinkRoom.Core;
 /// Spawns, monitors, and terminates the process.
 /// The room secret is NEVER passed on the command line — it lives in the config file.
 /// </summary>
-public sealed class EasyTierProcessService : IDisposable
+public sealed class EasyTierProcessService : IProcessHealth, IDisposable
 {
     private Process? _process;
     private readonly string _easytierCorePath;
