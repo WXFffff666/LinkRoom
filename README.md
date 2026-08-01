@@ -2,7 +2,7 @@
 
 Windows 便携式 P2P 游戏联机工具。单 exe 发布，数据存储在 exe 同目录 `LinkRoomData/`。
 
-**当前版本：v1.16.0**
+**当前版本：v1.17.0**
 
 ## 多语言（i18n）
 
@@ -23,10 +23,12 @@ Windows 便携式 P2P 游戏联机工具。单 exe 发布，数据存储在 exe 
 - **安全模式（E2EE）** — 默认开启：节点间独立协商加密密钥，中继也无法解密；可填写共享节点公钥锁定其身份（`peer_public_key`，填写后连接错误节点会被拒绝）。**注意：同一网络内所有节点必须一致开启安全模式（并保持相同版本），否则安全节点会拒绝未开启安全模式的节点**。公钥留空 = 仅加密、不验证共享节点身份（官方公共节点未发布固定公钥）。详见 `src/LinkRoom.Core/SPIKE-SECUREMODE.md`
 - **UPnP** — 对称型 NAT 可启用端口映射（设置中可配置）
 - **IPv6-only / SOCKS5** — 高级网络选项（设置页）
+- **房间聊天** — 通过虚拟网 TCP（端口 15889）进行房间内文字聊天，无需额外服务器
 
 ### 连接与质量
 
 - **连接质量面板** — P2P/中继、延迟、丢包、虚拟 IP
+- **rx/tx 流量统计** — 质量面板实时显示上下行流量（EasyTier 接口采样）
 - **P2P 路径可视化** — ASCII 路径图，展示 NAT → 策略 → 对端
 - **虚拟 IP 复制 / 连接测速** — 一键复制虚拟 IP，TCP 测速到游戏端口
 - **连接进度** — NAT 检测 → 路径选择 → 启动 EasyTier 分步进度条
@@ -37,7 +39,8 @@ Windows 便携式 P2P 游戏联机工具。单 exe 发布，数据存储在 exe 
 ### 房间与管理
 
 - **房间历史** — 最近 5 个房间快速重连
-- **房间锁定** — 房主可锁定房间（**服务端强制** + 客户端提示，EasyTier ACL `default_action=2` 拒绝非房主成员）。启用时 host 会在生成的 EasyTier 配置中追加 `[acl.acl_v1]` 段（默认拒绝 + 单一允许规则 `source_groups=["room-owner"]`），并把 256-bit `group_secret` 编码进 `linkroom://` 分享链接的 `lock=...` 参数。客人必须使用该链接加入（`EasyTierConfigBuilder` 会自动把同 secret 写进自己的 TOML），否则 host 的入站链会丢弃连接。**配置一致性要求**：所有节点必须使用同一 `group_secret`，否则 EasyTier 组校验失败。**新成员**在 host 开关锁定后需要重新生成链接并重连（secret 随每次开启轮换）。详见 `src/LinkRoom.Core/SPIKE-ACL.md`。
+- **房间锁定** — 房主可锁定房间（**服务端强制** + 客户端提示，EasyTier ACL `default_action=2` 拒绝非房主成员）。启用时 host 会在生成的 EasyTier 配置中追加 `[acl.acl_v1]` 段（默认拒绝 + 单一允许规则 `source_groups=["room-owner"]`），并把 256-bit `group_secret` 编码进 `linkroom://` 分享链接的 `lock=...` 参数。客人必须使用该链接加入（`EasyTierConfigBuilder` 会自动把同 secret 写进自己的 TOML），否则 host 的入站链会丢弃连接。**配置一致性要求**：所有节点必须一致开启并携带同一 `group_secret`（锁定由服务端 ACL 强制执行，非仅客户端提示），否则 EasyTier 组校验失败。**新成员**在 host 开关锁定后需要重新生成链接并重连（secret 随每次开启轮换）。详见 `src/LinkRoom.Core/SPIKE-ACL.md`。
+- **游戏自动检测 + 一键开房** — 扫描本机已知游戏进程（MC 等），命中后一键以对应游戏端口创建房间
 - **Peer 列表** — 显示 NAT / 延迟 / cost，支持 Ping 全部
 - **密码强度提示** — 实时评估密码安全性
 - **配置导入/导出** — `.linkroom.json` 格式备份与恢复设置
@@ -46,9 +49,11 @@ Windows 便携式 P2P 游戏联机工具。单 exe 发布，数据存储在 exe 
 
 ### 工具与其他
 
-- **GitHub 自动更新** — 启动时自动检查 / 手动检查，支持增量更新与一键重启安装
+- **GitHub 自动更新** — 启动时自动检查 / 手动检查，支持增量更新与一键重启安装；下载后强制校验 `.sha256` 完整性（校验失败不安装）
+- **崩溃自动诊断** — 异常退出时自动打包诊断 zip，并预填 GitHub Issue 链接方便上报
 - **首次运行向导** — 模式选择、自动更新、便携模式引导
 - **CLI 模式** — `LinkRoom.exe --join ROOM --pass xxx --headless`
+- **UI 美化** — Fluent 风格 36 色板（DynamicResource），深浅色一键切换
 - **诊断导出 / Web 管理面板 / 插件 API**
 
 ## 自动更新
@@ -67,6 +72,8 @@ LinkRoom 会从 GitHub Releases 拉取最新版本：
 - **取消** — 稍后提醒
 
 **增量更新**：若 EasyTier 运行时版本未变，仅替换 exe，保留 `LinkRoomData/runtime/`，无需重新解压 EasyTier。
+
+**完整性校验**：下载后与 GitHub Release 的 `.sha256` 边车文件比对哈希，校验失败（下载损坏或传输被篡改）不会安装，直接中止并提示。
 
 更新文件缓存位置：`LinkRoomData/update/`
 
@@ -119,7 +126,7 @@ LinkRoomData/
 .\tools\fetch-easytier.ps1
 
 dotnet publish src\LinkRoom\LinkRoom.csproj -c Release
-# 输出: src\LinkRoom\bin\Release\net8.0-windows\win-x64\publish\LinkRoom.exe
+# 输出: src\LinkRoom\bin\Release\net10.0-windows\win-x64\publish\LinkRoom.exe
 ```
 
 ## 自动发布
@@ -127,12 +134,37 @@ dotnet publish src\LinkRoom\LinkRoom.csproj -c Release
 推送 `v*` 标签即可触发 GitHub Actions 自动构建并发布 Release：
 
 ```bash
-git tag v1.16.0 && git push origin v1.16.0
+git tag v1.17.0 && git push origin v1.17.0
 ```
 
 详见 [docs/RELEASE.md](docs/RELEASE.md)
 
 ## 版本历史
+
+### v1.17.0
+
+**平台**
+
+- 升级 .NET 10 LTS（全部 4 个 csproj + CI + Release 工作流）
+
+**全部修复（BUG-1 ~ BUG-17 摘要）**
+
+- IPv6-only 场景 TOML 重复键解析错误、跨线程 UI 访问、CLI 启动时序、`RuntimeAssetExtractor` 原子解压等 17 项缺陷全部修复
+
+**安全**
+
+- 更新链 SHA256 完整性校验（release.yml 自动生成 `.sha256` 边车，`UpdateService` 校验失败不安装）
+- PowerShell 注入修复、TOML 注入修复、temp 目录清理
+- EasyTier 安全模式（E2EE，详见 v1.16.2 记录）与房间锁定服务端化（ACL，详见 v1.16.1 记录）
+- 崩溃自动诊断：异常退出自动打包本地 zip + 预填 GitHub Issue
+
+**功能**
+
+- 游戏进程自动检测 + 一键开房（按游戏端口创建房间）
+- 房间聊天（虚拟网 TCP，端口 15889）
+- rx/tx 流量统计（连接质量面板）
+- 中英双语 i18n（resx 114 key，跟随系统 / 手动切换，见上文「多语言（i18n）」）
+- UI 美化（Fluent 36 色板 DynamicResource，深浅色切换）
 
 ### v1.16.0
 
@@ -170,6 +202,11 @@ git tag v1.16.0 && git push origin v1.16.0
 | [Stun.Net](https://github.com/HMBSbige/Stun.Net) | STUN 协议 |
 | [QRCoder](https://github.com/codebude/QRCoder) | QR 码生成 |
 
-## 许可
+## 许可与 LGPL-3.0 合规
 
-LinkRoom: MIT | EasyTier: LGPL-3.0
+- **LinkRoom**：MIT License
+- **EasyTier**（P2P 核心）：LGPL-3.0。LinkRoom 以**独立程序**方式调用 EasyTier 运行时二进制（`easytier-core` 子进程），未修改/链接其库代码；该二进制内嵌于发布包，首次运行解压到 `LinkRoomData/runtime/<版本>/`（当前 `2.6.4/`）
+- **替换机制**：如需替换或自行编译 EasyTier，直接手动覆盖 `LinkRoomData/runtime/<版本>/` 下对应二进制即可，LinkRoom 每次启动时检测并启动目录内的运行时，不强制使用内置版本
+- **源码链接**：[EasyTier 源码](https://github.com/EasyTier/EasyTier)（LGPL-3.0）
+- **其他引用项目**：见上方「引用项目」表；STUN/NAT 逻辑参考 MIT 许可项目
+- **代码签名**：未配置代码签名证书（数字签名），此项列入后续计划，不影响功能使用
